@@ -1,0 +1,27 @@
+services:
+  app:
+    build: .
+    container_name: bibliotecavirtual_app
+    env_file:
+        - .env
+    ports:
+      - "8080:8080"
+    depends_on:
+      - db
+    environment:
+      SPRING_PROFILES_ACTIVE: prod
+
+  db:
+    image: postgres:15
+    container_name: bibliotecavirtual-db
+    environment:
+      POSTGRES_DB: ${DB_NAME}
+      POSTGRES_USER: ${DB_USER}
+      POSTGRES_PASSWORD: ${DB_PASSWORD}
+    ports:
+      - "5432:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+
+volumes:
+  pgdata:
