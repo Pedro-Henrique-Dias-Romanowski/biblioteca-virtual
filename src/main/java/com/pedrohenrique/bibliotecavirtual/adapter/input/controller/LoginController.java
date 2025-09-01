@@ -1,4 +1,4 @@
 package com.pedrohenrique.bibliotecavirtual.adapter.input.controller;
 
-public class ClienteController {
+public class LoginController {
 }
