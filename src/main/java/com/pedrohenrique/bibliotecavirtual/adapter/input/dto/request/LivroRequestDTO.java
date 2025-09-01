@@ -3,17 +3,19 @@ package com.pedrohenrique.bibliotecavirtual.adapter.input.dto.request;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotBlank;
 
-public record ClienteRequestDTO(
+public record LivroRequestDTO(
 
         @NotBlank
         @Valid
-        String nome,
+        String titulo,
         @NotBlank
         @Valid
-        String email,
+        String autor,
         @NotBlank
         @Valid
-        String senha,
-        Integer qtLivrosEmprestados
+        String editora,
+        @NotBlank
+        @Valid
+        Integer anoPublicacao
 ) {
 }
