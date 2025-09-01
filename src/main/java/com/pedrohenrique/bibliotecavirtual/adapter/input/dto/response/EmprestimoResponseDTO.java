@@ -1,4 +1,11 @@
 package com.pedrohenrique.bibliotecavirtual.adapter.input.dto.response;
 
-public record EmprestimoResponseDTO() {
+import java.time.LocalDate;
+
+public record EmprestimoResponseDTO(
+        Long idEmprestimo,
+        Long idLivro,
+        LocalDate dataEmprestimo,
+        LocalDate dataDevolucao
+) {
 }
