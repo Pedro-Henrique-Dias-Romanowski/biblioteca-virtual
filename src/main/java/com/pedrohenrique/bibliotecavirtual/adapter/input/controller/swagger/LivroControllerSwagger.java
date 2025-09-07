@@ -33,7 +33,7 @@ public interface LivroControllerSwagger {
     @Operation(summary = "Buscar um livro por ID", description = "Faz a busca de um livro na biblioteca virtual utilizando seu ID")
     @GetMapping("/livros/{idLivro}")
     // ESSA URL VAI SER ACESSADA TANTO PELO ADMIN QUANTO PELO CLIENTE, OS DOIS DEVEM ESTAR AUTENTICADOS
-    public ResponseEntity<Optional<LivroResponseDTO>> buscarLivro(@PathVariable Long idLivro, @RequestHeader String tokenJwt);
+    public ResponseEntity<Optional<LivroResponseDTO>> buscarLivroPorId(@PathVariable Long idLivro, @RequestHeader String tokenJwt);
 
     @Operation(summary = "Remover um livro", description = "Permite a remoção de um livro da biblioteca virtual utilizando seu ID")
     @DeleteMapping("/livros/{idLivro}")

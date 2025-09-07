@@ -5,10 +5,10 @@ import com.pedrohenrique.bibliotecavirtual.domain.entity.Emprestimo;
 import java.util.List;
 import java.util.Optional;
 
-public interface ClienteOuputPort {
+public interface ClienteOutputPort {
 
     List<Emprestimo> visualizarTodosOsEmprestimos();
     Optional<Emprestimo> emprestarLivro(Emprestimo emprestimo);
     Cliente cadastrarCliente(Cliente cliente);
-    void efetuarLogin();
+    boolean existsByEmail(Cliente cliente);
 }

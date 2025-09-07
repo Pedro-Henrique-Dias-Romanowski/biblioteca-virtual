@@ -8,4 +8,5 @@ import java.util.Optional;
 public interface ClienteRepository extends JpaRepository<ClienteEntity ,Long> {
 
     Optional<ClienteEntity> findByEmailIgnoreCase(String email);
+    boolean existsByEmailIgnoreCase(String email);
 }

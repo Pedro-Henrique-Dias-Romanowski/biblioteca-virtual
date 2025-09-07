@@ -5,7 +5,7 @@ import com.pedrohenrique.bibliotecavirtual.domain.entity.Livro;
 import java.util.List;
 import java.util.Optional;
 
-public interface LivroOuputPort {
+public interface LivroOutputPort {
 
     Livro cadastrarLivro(Livro livro);
     Livro editarDadosLivro(Long idLivroAntigo, Livro livroAtualizado);
