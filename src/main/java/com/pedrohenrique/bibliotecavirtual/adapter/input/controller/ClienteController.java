@@ -3,6 +3,7 @@ package com.pedrohenrique.bibliotecavirtual.adapter.input.controller;
 import com.pedrohenrique.bibliotecavirtual.adapter.input.controller.swagger.ClienteControllerSwagger;
 import com.pedrohenrique.bibliotecavirtual.adapter.input.dto.request.ClienteRequestDTO;
 import com.pedrohenrique.bibliotecavirtual.adapter.input.dto.request.EmprestimoRequestDTO;
+import com.pedrohenrique.bibliotecavirtual.adapter.input.dto.request.LoginRequestDTO;
 import com.pedrohenrique.bibliotecavirtual.adapter.input.dto.response.ClienteResponseDTO;
 import com.pedrohenrique.bibliotecavirtual.adapter.input.dto.response.EmprestimoResponseDTO;
 import com.pedrohenrique.bibliotecavirtual.adapter.input.dto.response.LoginResponseDTO;
@@ -15,10 +16,13 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.web.bind.annotation.RestController;
 
 import java.time.LocalDateTime;
 import java.util.List;
 
+
+@RestController
 public class ClienteController implements ClienteControllerSwagger {
 
     private final ClienteMapper clienteMapper;
@@ -45,11 +49,11 @@ public class ClienteController implements ClienteControllerSwagger {
     }
 
     @Override
-    public ResponseEntity<LoginResponseDTO> efetuarLogin(String email, String senha) {
-        var authenticationToken = new UsernamePasswordAuthenticationToken(email, senha);
+    public ResponseEntity<LoginResponseDTO> efetuarLogin(LoginRequestDTO loginRequestDTO) {
+        var authenticationToken = new UsernamePasswordAuthenticationToken(loginRequestDTO.email(), loginRequestDTO.senha());
         var authentication = authenticationManager.authenticate(authenticationToken);
-
         String token = autenticacaoService.gerarToken((ClienteEntity) authentication.getPrincipal());
+
         return ResponseEntity.ok().body(new LoginResponseDTO(token, LocalDateTime.now()));
     }
 

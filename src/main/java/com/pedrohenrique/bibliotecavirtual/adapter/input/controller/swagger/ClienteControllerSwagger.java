@@ -3,6 +3,7 @@ package com.pedrohenrique.bibliotecavirtual.adapter.input.controller.swagger;
 
 import com.pedrohenrique.bibliotecavirtual.adapter.input.dto.request.ClienteRequestDTO;
 import com.pedrohenrique.bibliotecavirtual.adapter.input.dto.request.EmprestimoRequestDTO;
+import com.pedrohenrique.bibliotecavirtual.adapter.input.dto.request.LoginRequestDTO;
 import com.pedrohenrique.bibliotecavirtual.adapter.input.dto.response.ClienteResponseDTO;
 import com.pedrohenrique.bibliotecavirtual.adapter.input.dto.response.EmprestimoResponseDTO;
 import com.pedrohenrique.bibliotecavirtual.adapter.input.dto.response.LoginResponseDTO;
@@ -28,7 +29,7 @@ public interface ClienteControllerSwagger {
 
     @Operation(summary = "Efetuar login", description = "Permite que o cliente se autentique dentro da biblioteca")
     @PostMapping("clientes/login")
-    public ResponseEntity<LoginResponseDTO> efetuarLogin(@RequestBody String email, @RequestBody String senha);
+    public ResponseEntity<LoginResponseDTO> efetuarLogin(@RequestBody LoginRequestDTO loginRequestDTO);
 
     @Operation(summary = "Visualizar empréstimos", description = "Permite que o cliente visualize todos os seus empréstimos feitos na biblioteca")
     @GetMapping("/clientes/livros")

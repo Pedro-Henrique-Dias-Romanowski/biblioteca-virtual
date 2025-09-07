@@ -23,4 +23,8 @@ public class ClienteUseCase {
             throw new DataBaseException("Cliente nulo ou já cadastrado");
         }
     }
+
+    public boolean verificarEmail(Cliente cliente){
+        return clienteOutputPort.existsByEmail(cliente);
+    }
 }

@@ -5,10 +5,12 @@ import com.pedrohenrique.bibliotecavirtual.adapter.input.dto.request.LivroReques
 import com.pedrohenrique.bibliotecavirtual.adapter.input.dto.response.LivroResponseDTO;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.web.bind.annotation.RestController;
 
 import java.util.List;
 import java.util.Optional;
 
+@RestController
 public class LivroController implements LivroControllerSwagger {
 
     @Override

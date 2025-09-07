@@ -5,7 +5,10 @@ import com.pedrohenrique.bibliotecavirtual.adapter.input.dto.request.EmprestimoR
 import com.pedrohenrique.bibliotecavirtual.adapter.input.dto.response.EmprestimoResponseDTO;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.web.bind.annotation.RestController;
 
+
+@RestController
 public class EmprestimoController implements EmprestimoControllerSwagger{
 
     @Override

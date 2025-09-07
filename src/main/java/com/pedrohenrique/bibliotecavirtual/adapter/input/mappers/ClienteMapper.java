@@ -17,9 +17,11 @@ public interface ClienteMapper {
     ClienteResponseDTO toResponse(Cliente cliente);
 
     @Mapping(target = "emprestimos", ignore = true)
+    @Mapping(target = "authorities", ignore = true)
     ClienteEntity toEntity(Cliente cliente);
 
-    @Mapping(target = "qtLivrosEmprestados", expression = "java(entity.getEmprestimos() != null ? entity.getEmprestimos().size() : 0)")
+    @Mapping(target = "qtLivrosEmprestados", expression = "java(clienteEntity.getEmprestimos() != null ? clienteEntity.getEmprestimos().size() : 0)")
     Cliente entityToDomain(ClienteEntity clienteEntity);
+
 
 }

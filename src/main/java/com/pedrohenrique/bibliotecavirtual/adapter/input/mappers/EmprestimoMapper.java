@@ -4,11 +4,15 @@ import com.pedrohenrique.bibliotecavirtual.adapter.input.dto.request.EmprestimoR
 import com.pedrohenrique.bibliotecavirtual.adapter.input.dto.response.EmprestimoResponseDTO;
 import com.pedrohenrique.bibliotecavirtual.domain.entity.Emprestimo;
 import org.mapstruct.Mapper;
+import org.mapstruct.Mapping;
 
 @Mapper(componentModel = "spring")
 public interface EmprestimoMapper {
 
-    // todo verificar os dtos, pois para o mapper funcionar, os atributos devem ser iguais
+
+    @Mapping(target = "id", ignore = true)
     Emprestimo toDomain(EmprestimoRequestDTO emprestimoRequestDTO);
+
+    @Mapping(target = "idEmprestimo", source = "id")
     EmprestimoResponseDTO toResponse(Emprestimo emprestimo);
 }
