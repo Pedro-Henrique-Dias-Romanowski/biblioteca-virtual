@@ -13,7 +13,7 @@ public class EmprestimoController implements EmprestimoControllerSwagger{
 
     @Override
     @PreAuthorize("hasRole('CLIENTE')")
-    public ResponseEntity<EmprestimoResponseDTO> cadastrarEmprestimo(EmprestimoRequestDTO emprestimoRequestDTO, String tokenJwt) {
+    public ResponseEntity<EmprestimoResponseDTO> cadastrarEmprestimo(EmprestimoRequestDTO emprestimoRequestDTO) {
         return null;
     }
 }

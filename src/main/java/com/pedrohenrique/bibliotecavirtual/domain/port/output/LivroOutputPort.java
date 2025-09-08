@@ -8,8 +8,8 @@ import java.util.Optional;
 public interface LivroOutputPort {
 
     Livro cadastrarLivro(Livro livro);
-    Livro editarDadosLivro(Long idLivroAntigo, Livro livroAtualizado);
     List<Livro> visualizaTodosOsLivros();
-    Optional<Livro> buscarLivroPorId(Livro livro);
+    Optional<Livro> buscarLivroPorId(Long idLivro);
     void removerLivro(Long idLivro);
+    boolean existeLivroPorId(Long idLivro);
 }

@@ -16,5 +16,5 @@ public interface EmprestimoControllerSwagger {
     @Operation(summary = "Cadastrar um empréstimo", description = "Permite cadastrar um empréstimo após a realização de um empréstimo feita por um cliente")
     @PostMapping("/emprestimos")
     // ESSA URL SÓ VAI SER ACESSADA PELO CLIENTE, POIS É ELE QUE VAI FAZER O EMPRÉSTIMO
-    public ResponseEntity<EmprestimoResponseDTO> cadastrarEmprestimo(@RequestBody EmprestimoRequestDTO emprestimoRequestDTO, @RequestHeader String tokenJwt);
+    public ResponseEntity<EmprestimoResponseDTO> cadastrarEmprestimo(@RequestBody EmprestimoRequestDTO emprestimoRequestDTO);
 }

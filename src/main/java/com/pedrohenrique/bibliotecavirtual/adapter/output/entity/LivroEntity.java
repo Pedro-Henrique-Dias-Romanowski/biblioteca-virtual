@@ -21,6 +21,7 @@ public class LivroEntity{
     private Long id;
     private String titulo;
     private String autor;
+    private String editora;
     private Integer anoPublicacao;
     private Boolean disponivel;
 
