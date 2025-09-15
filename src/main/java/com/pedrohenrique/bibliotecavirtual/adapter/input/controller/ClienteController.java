@@ -54,7 +54,7 @@ public class ClienteController implements ClienteControllerSwagger {
         var authentication = authenticationManager.authenticate(authenticationToken);
         String token = usuarioAutenticacaoService.gerarTokenCliente((ClienteEntity) authentication.getPrincipal());
 
-        return ResponseEntity.ok().body(new LoginResponseDTO(token, LocalDateTime.now()));
+        return ResponseEntity.ok().body(new LoginResponseDTO(token, LocalDateTime.now(), ((ClienteEntity) authentication.getPrincipal()).getPerfil()));
     }
 
     @Override

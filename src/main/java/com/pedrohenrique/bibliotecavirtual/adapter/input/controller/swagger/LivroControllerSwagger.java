@@ -16,7 +16,7 @@ import java.util.Optional;
 public interface LivroControllerSwagger {
 
     @Operation(summary = "Cadastrar um novo livro", description = "Permite o cadastro de um novo livro na biblioteca virtual")
-    @PostMapping("/livros")
+    @PostMapping("/cadastrar/livros")
     // ESSA URL SÓ VAI SER ACESSADA PELO ADMIN
     public ResponseEntity<LivroResponseDTO> cadastrarLivro(@RequestBody LivroRequestDTO livroRequestDTO) throws DataBaseException;
 

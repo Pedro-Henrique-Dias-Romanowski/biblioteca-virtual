@@ -10,5 +10,7 @@ public interface LivroRepository extends JpaRepository<LivroEntity, Long> {
     boolean existsById(Long id);
     Optional<LivroEntity> findById(Long id);
 
+    Optional<LivroEntity> findByTituloIgnoreCase(String titulo);
+
     Long id(Long id);
 }

@@ -18,7 +18,7 @@ public class LivroUseCase {
     }
 
     public Livro cadastrarLivro(Livro livro) throws DataBaseException {
-        if (livro != null && !livroOutputPort.existeLivroPorId(livro.getId())){
+        if (livro != null && !livroOutputPort.existeLivroPorTitulo(livro.getTitulo())){
             return livroOutputPort.cadastrarLivro(livro);
         } else {
             throw new DataBaseException("Livro nulo ou já existente");

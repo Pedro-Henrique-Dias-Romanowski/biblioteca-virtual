@@ -12,4 +12,5 @@ public interface LivroOutputPort {
     Optional<Livro> buscarLivroPorId(Long idLivro);
     void removerLivro(Long idLivro);
     boolean existeLivroPorId(Long idLivro);
+    boolean existeLivroPorTitulo(String titulo);
 }

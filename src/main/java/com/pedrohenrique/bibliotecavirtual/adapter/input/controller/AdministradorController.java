@@ -30,6 +30,6 @@ public class AdministradorController implements AdministradorControllerSwagger {
         var authentication = authenticationManager.authenticate(authenticationToken);
         String token = usuarioAutenticacaoService.gerarTokenAdministrador((AdministradorEntity) authentication.getPrincipal());
 
-        return ResponseEntity.ok().body(new LoginResponseDTO(token, LocalDateTime.now()));
+        return ResponseEntity.ok().body(new LoginResponseDTO(token, LocalDateTime.now(), ((AdministradorEntity) authentication.getPrincipal()).getPerfil()));
     }
 }
