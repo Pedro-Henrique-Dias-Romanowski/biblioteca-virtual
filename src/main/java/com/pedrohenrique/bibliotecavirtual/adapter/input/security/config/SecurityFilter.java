@@ -1,7 +1,9 @@
 package com.pedrohenrique.bibliotecavirtual.adapter.input.security.config;
 
+import com.pedrohenrique.bibliotecavirtual.adapter.output.repository.AdministradorRepository;
 import com.pedrohenrique.bibliotecavirtual.adapter.output.repository.ClienteRepository;
-import com.pedrohenrique.bibliotecavirtual.adapter.service.AutenticacaoService;
+import com.pedrohenrique.bibliotecavirtual.adapter.service.TokenService;
+import com.pedrohenrique.bibliotecavirtual.domain.enums.Perfil;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
@@ -9,6 +11,7 @@ import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
 
@@ -18,11 +21,13 @@ import java.io.IOException;
 public class SecurityFilter extends OncePerRequestFilter {
 
     private final ClienteRepository clienteRepository;
-    private final AutenticacaoService autenticacaoService;
+    private final AdministradorRepository administradorRepository;
+    private final TokenService tokenService;
 
-    public SecurityFilter(ClienteRepository clienteRepository, AutenticacaoService autenticacaoService) {
+    public SecurityFilter(ClienteRepository clienteRepository, AdministradorRepository administradorRepository, TokenService tokenService) {
         this.clienteRepository = clienteRepository;
-        this.autenticacaoService = autenticacaoService;
+        this.administradorRepository = administradorRepository;
+        this.tokenService = tokenService;
     }
 
     @Override
@@ -30,11 +35,19 @@ public class SecurityFilter extends OncePerRequestFilter {
         String token = recuperarTokenRequisicao(request);
 
         if (token != null){
-            String email = autenticacaoService.verificarToken(token);
-            var cliente = clienteRepository.findByEmailIgnoreCase(email)
-                    .orElseThrow();
-            Authentication authentication = new UsernamePasswordAuthenticationToken(cliente, null, cliente.getAuthorities());
-            SecurityContextHolder.getContext().setAuthentication(authentication);
+            String email = tokenService.verificarToken(token);
+
+            var usuario = clienteRepository.findByEmailIgnoreCase(email)
+                    .map(user -> (UserDetails) user)
+                    .or (() -> administradorRepository.findByEmailIgnoreCase(email)
+                            .map(user -> (UserDetails) user))
+                    .orElse(null);
+
+            if (usuario != null) {
+                Authentication authentication = new UsernamePasswordAuthenticationToken(usuario, null, usuario.getAuthorities());
+                SecurityContextHolder.getContext().setAuthentication(authentication);
+            }
+
         }
 
         filterChain.doFilter(request, response);

@@ -11,7 +11,7 @@ import lombok.Setter;
 @Setter
 @NoArgsConstructor
 @EqualsAndHashCode(of = "id")
-public class Adminstrador {
+public class Administrador {
 
     private Long id;
     private String nome;

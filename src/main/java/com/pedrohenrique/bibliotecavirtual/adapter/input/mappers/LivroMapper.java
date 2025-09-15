@@ -15,9 +15,15 @@ public interface LivroMapper {
     @Mapping(target = "disponivel", ignore = true)
     @Mapping(target = "id", ignore = true)
     Livro toDomain(LivroRequestDTO livroRequestDTO);
+
     LivroResponseDTO toResponse(Livro livro);
 
+    @Mapping(target = "emprestimos", ignore = true)
     LivroEntity toEntity(Livro livro);
+
     Livro entityToDomain(LivroEntity livroEntity);
-    Livro entityToDomainOptional(Optional<LivroEntity> livroEntity);
+
+    default Livro entityToDomainOptional(Optional<LivroEntity> livroEntity){
+        return livroEntity.map(this::entityToDomain).orElse(null);
+    }
 }

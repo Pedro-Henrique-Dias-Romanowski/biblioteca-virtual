@@ -1,12 +1,11 @@
 package com.pedrohenrique.bibliotecavirtual.adapter.service;
 
 import com.auth0.jwt.JWT;
-import com.auth0.jwt.JWTVerifier;
 import com.auth0.jwt.algorithms.Algorithm;
 import com.auth0.jwt.exceptions.JWTCreationException;
-import com.auth0.jwt.exceptions.JWTVerificationException;
-import com.auth0.jwt.interfaces.DecodedJWT;
+import com.pedrohenrique.bibliotecavirtual.adapter.output.entity.AdministradorEntity;
 import com.pedrohenrique.bibliotecavirtual.adapter.output.entity.ClienteEntity;
+import com.pedrohenrique.bibliotecavirtual.adapter.output.repository.AdministradorRepository;
 import com.pedrohenrique.bibliotecavirtual.adapter.output.repository.ClienteRepository;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -19,24 +18,29 @@ import java.time.LocalDateTime;
 import java.time.ZoneOffset;
 
 @Service
-public class AutenticacaoService implements UserDetailsService {
+public class UsuarioAutenticacaoService implements UserDetailsService {
 
     private final ClienteRepository clienteRepository;
+    private final AdministradorRepository administradorRepository;
 
-    @Value("${APP_JWT_SECRET}")
+    @Value("${JWT_SECRET}")
     private String JWT_SECRET;
 
-    public AutenticacaoService(ClienteRepository clienteRepository) {
+    public UsuarioAutenticacaoService(ClienteRepository clienteRepository, AdministradorRepository administradorRepository) {
         this.clienteRepository = clienteRepository;
+        this.administradorRepository = administradorRepository;
     }
 
     @Override
     public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
         return clienteRepository.findByEmailIgnoreCase(username)
+                .map(user -> (UserDetails) user)
+                .or(() -> administradorRepository.findByEmailIgnoreCase(username)
+                        .map(user -> (UserDetails) user))
                 .orElseThrow(() -> new UsernameNotFoundException("Usuário não encontrado"));
     }
 
-    public String gerarToken(ClienteEntity cliente){
+    public String gerarTokenCliente(ClienteEntity cliente){
         try{
             Algorithm algorithm = Algorithm.HMAC256(JWT_SECRET);
             return JWT.create()
@@ -50,19 +54,17 @@ public class AutenticacaoService implements UserDetailsService {
         }
     }
 
-    public String verificarToken(String token){
-        DecodedJWT decodedJWT;
+    public String gerarTokenAdministrador(AdministradorEntity administrador){
         try{
             Algorithm algorithm = Algorithm.HMAC256(JWT_SECRET);
-            JWTVerifier verifier = JWT.require(algorithm)
+            return JWT.create()
                     .withIssuer("Biblioteca Virtual")
-                    .build();
-
-            decodedJWT = verifier.verify(token);
-            return decodedJWT.getSubject();
-        } catch(JWTVerificationException e){
-            // todo lancar uma exceção correta, fazer isso depois que criar a exception handler a a exceção personalizada
-            throw new RuntimeException("Token JWT inválido ou expirado", e);
+                    .withSubject(administrador.getEmail())
+                    .withExpiresAt(dataExpiracaoToken())
+                    .sign(algorithm);
+        } catch(JWTCreationException e){
+            // todo lançar um exceção correta, fazer isso depois que criar a exception handler e a exceção personalizada
+            throw new RuntimeException("Erro ao gerar token JWT", e);
         }
     }
 

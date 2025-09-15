@@ -19,7 +19,7 @@ import java.util.List;
 @Setter
 @NoArgsConstructor
 @EqualsAndHashCode(of = "id")
-public class AdminstradorEntity implements UserDetails {
+public class AdministradorEntity implements UserDetails {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -27,6 +27,8 @@ public class AdminstradorEntity implements UserDetails {
     private String nome;
     private String email;
     private String senha;
+
+    @Enumerated(EnumType.STRING)
     private Perfil perfil;
 
     @Override

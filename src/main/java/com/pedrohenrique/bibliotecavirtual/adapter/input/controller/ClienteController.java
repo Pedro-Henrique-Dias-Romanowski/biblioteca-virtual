@@ -9,7 +9,7 @@ import com.pedrohenrique.bibliotecavirtual.adapter.input.dto.response.Emprestimo
 import com.pedrohenrique.bibliotecavirtual.adapter.input.dto.response.LoginResponseDTO;
 import com.pedrohenrique.bibliotecavirtual.adapter.input.mappers.ClienteMapper;
 import com.pedrohenrique.bibliotecavirtual.adapter.output.entity.ClienteEntity;
-import com.pedrohenrique.bibliotecavirtual.adapter.service.AutenticacaoService;
+import com.pedrohenrique.bibliotecavirtual.adapter.service.UsuarioAutenticacaoService;
 import com.pedrohenrique.bibliotecavirtual.domain.exceptions.DataBaseException;
 import com.pedrohenrique.bibliotecavirtual.domain.usecase.ClienteUseCase;
 import org.springframework.http.ResponseEntity;
@@ -31,13 +31,13 @@ public class ClienteController implements ClienteControllerSwagger {
 
     private final AuthenticationManager authenticationManager;
 
-    private final AutenticacaoService autenticacaoService;
+    private final UsuarioAutenticacaoService usuarioAutenticacaoService;
 
-    public ClienteController(ClienteMapper clienteMapper, ClienteUseCase clienteUseCase, AuthenticationManager authenticationManager, AutenticacaoService autenticacaoService) {
+    public ClienteController(ClienteMapper clienteMapper, ClienteUseCase clienteUseCase, AuthenticationManager authenticationManager, UsuarioAutenticacaoService usuarioAutenticacaoService) {
         this.clienteMapper = clienteMapper;
         this.clienteUseCase = clienteUseCase;
         this.authenticationManager = authenticationManager;
-        this.autenticacaoService = autenticacaoService;
+        this.usuarioAutenticacaoService = usuarioAutenticacaoService;
     }
 
     @Override
@@ -52,7 +52,7 @@ public class ClienteController implements ClienteControllerSwagger {
     public ResponseEntity<LoginResponseDTO> efetuarLogin(LoginRequestDTO loginRequestDTO) {
         var authenticationToken = new UsernamePasswordAuthenticationToken(loginRequestDTO.email(), loginRequestDTO.senha());
         var authentication = authenticationManager.authenticate(authenticationToken);
-        String token = autenticacaoService.gerarToken((ClienteEntity) authentication.getPrincipal());
+        String token = usuarioAutenticacaoService.gerarTokenCliente((ClienteEntity) authentication.getPrincipal());
 
         return ResponseEntity.ok().body(new LoginResponseDTO(token, LocalDateTime.now()));
     }
