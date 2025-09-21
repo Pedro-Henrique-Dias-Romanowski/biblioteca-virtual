@@ -13,4 +13,5 @@ public interface LivroOutputPort {
     void removerLivro(Long idLivro);
     boolean existeLivroPorId(Long idLivro);
     boolean existeLivroPorTitulo(String titulo);
+    Livro pegarReferenciaPorId(Long idLivro);
 }

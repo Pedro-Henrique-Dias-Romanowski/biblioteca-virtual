@@ -2,7 +2,11 @@ package com.pedrohenrique.bibliotecavirtual.domain.port.output;
 
 import com.pedrohenrique.bibliotecavirtual.domain.entity.Emprestimo;
 
+import java.util.List;
+
 public interface EmprestimoOutputPort {
 
-    Emprestimo cadastrarEmprestimo(Emprestimo emprestimo);
+    Emprestimo realizarEmprestimo(Emprestimo emprestimo);
+
+    List<Emprestimo> visualizarTodosOsEmprestimos();
 }

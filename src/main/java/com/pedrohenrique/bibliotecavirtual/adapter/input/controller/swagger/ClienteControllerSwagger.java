@@ -32,8 +32,8 @@ public interface ClienteControllerSwagger {
     public ResponseEntity<LoginResponseDTO> efetuarLogin(@RequestBody LoginRequestDTO loginRequestDTO);
 
     @Operation(summary = "Visualizar empréstimos", description = "Permite que o cliente visualize todos os seus empréstimos feitos na biblioteca")
-    @GetMapping("/clientes/livros")
-    // ESSA URL SÓ VAI SER ACESSADA PELO PROPRIO CLIENTE, SO ELE VAI PODER VER OS EMRPESTIMOS DELE MESMO
+    @GetMapping("/clientes/emprestimos/{idCliente}")
+    // ESSA URL SÓ VAI SER ACESSADA PELO PROPRIO CLIENTE, SO ELE VAI PODER VER OS EMPRESTIMOS DELE MESMO
     public ResponseEntity<List<EmprestimoResponseDTO>> visualizarTodosOsEmprestimos(@PathVariable Long idCliente);
 
     @Operation(summary = "Realizar empréstimo", description = "Permite que o cliente realize o empréstimo de um ou mais livros na biblioteca")

@@ -8,6 +8,7 @@ import com.pedrohenrique.bibliotecavirtual.adapter.input.dto.response.ClienteRes
 import com.pedrohenrique.bibliotecavirtual.adapter.input.dto.response.EmprestimoResponseDTO;
 import com.pedrohenrique.bibliotecavirtual.adapter.input.dto.response.LoginResponseDTO;
 import com.pedrohenrique.bibliotecavirtual.adapter.input.mappers.ClienteMapper;
+import com.pedrohenrique.bibliotecavirtual.adapter.input.mappers.EmprestimoMapper;
 import com.pedrohenrique.bibliotecavirtual.adapter.output.entity.ClienteEntity;
 import com.pedrohenrique.bibliotecavirtual.adapter.service.UsuarioAutenticacaoService;
 import com.pedrohenrique.bibliotecavirtual.domain.exceptions.DataBaseException;
@@ -27,14 +28,17 @@ public class ClienteController implements ClienteControllerSwagger {
 
     private final ClienteMapper clienteMapper;
 
+    private final EmprestimoMapper emprestimoMapper;
+
     private final ClienteUseCase clienteUseCase;
 
     private final AuthenticationManager authenticationManager;
 
     private final UsuarioAutenticacaoService usuarioAutenticacaoService;
 
-    public ClienteController(ClienteMapper clienteMapper, ClienteUseCase clienteUseCase, AuthenticationManager authenticationManager, UsuarioAutenticacaoService usuarioAutenticacaoService) {
+    public ClienteController(ClienteMapper clienteMapper, EmprestimoMapper emprestimoMapper, ClienteUseCase clienteUseCase, AuthenticationManager authenticationManager, UsuarioAutenticacaoService usuarioAutenticacaoService) {
         this.clienteMapper = clienteMapper;
+        this.emprestimoMapper = emprestimoMapper;
         this.clienteUseCase = clienteUseCase;
         this.authenticationManager = authenticationManager;
         this.usuarioAutenticacaoService = usuarioAutenticacaoService;
@@ -60,12 +64,16 @@ public class ClienteController implements ClienteControllerSwagger {
     @Override
     @PreAuthorize("hasRole('CLIENTE') and #idCliente == authentication.principal.id")
     public ResponseEntity<List<EmprestimoResponseDTO>> visualizarTodosOsEmprestimos(Long idCliente) {
-        return null;
+        var listaResponse = clienteUseCase.visualizarTodosOsEmprestimos().stream().map(emp -> emprestimoMapper.toResponse(emp)).toList();
+        return ResponseEntity.ok().body(listaResponse);
     }
 
     @Override
     @PreAuthorize("hasRole('CLIENTE') and #emprestimoRequestDTO.idUsuario() == authentication.principal.id")
     public ResponseEntity<EmprestimoResponseDTO> realizarEmprestimo(EmprestimoRequestDTO emprestimoRequestDTO) {
-        return null;
+        var emprestimo = emprestimoMapper.toDomain(emprestimoRequestDTO);
+        var emprestimoCadastrado = clienteUseCase.realizarEmprestimo(emprestimo);
+
+        return ResponseEntity.ok().body(emprestimoMapper.toResponse(emprestimoCadastrado));
     }
 }

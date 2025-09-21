@@ -5,6 +5,7 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 import java.time.LocalDate;
+import java.util.List;
 
 
 @Getter
@@ -13,8 +14,9 @@ import java.time.LocalDate;
 public class Emprestimo {
 
     private Long id;
-    private Long idLivro;
-    private Long idUsuario;
+    private List<Long> idLivros;
+    private Long clienteId;
     private LocalDate dataEmprestimo;
     private LocalDate dataDevolucao;
+    private boolean devolvido;
 }

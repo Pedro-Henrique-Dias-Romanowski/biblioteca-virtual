@@ -28,7 +28,7 @@ public class EmprestimoEntity {
             joinColumns = @JoinColumn(name = "emprestimo_id"),
             inverseJoinColumns = @JoinColumn(name = "livro_id")
     )
-    private List<LivroEntity> livros;
+    private List<LivroEntity> idLivros;
 
     private LocalDate dataEmprestimo;
     private LocalDate dataDevolucao;

@@ -5,6 +5,7 @@ import com.pedrohenrique.bibliotecavirtual.adapter.output.repository.LivroReposi
 import com.pedrohenrique.bibliotecavirtual.domain.entity.Livro;
 import com.pedrohenrique.bibliotecavirtual.domain.port.output.LivroOutputPort;
 import org.springframework.stereotype.Component;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 import java.util.Optional;
@@ -21,6 +22,7 @@ public class LivroAdapter implements LivroOutputPort {
         this.livroMapper = livroMapper;
     }
 
+    @Transactional
     @Override
     public Livro cadastrarLivro(Livro livro){
         var livroEntity = livroMapper.toEntity(livro);
@@ -45,6 +47,7 @@ public class LivroAdapter implements LivroOutputPort {
         return Optional.ofNullable(livroMapper.entityToDomainOptional(livroEntity));
     }
 
+    @Transactional
     @Override
     public void removerLivro(Long idLivro) {
         livroRepository.deleteById(idLivro);
@@ -59,4 +62,12 @@ public class LivroAdapter implements LivroOutputPort {
     public boolean existeLivroPorTitulo(String titulo) {
         return livroRepository.findByTituloIgnoreCase(titulo).isPresent();
     }
+
+    @Override
+    public Livro pegarReferenciaPorId(Long idLivro) {
+        var livroEntity = livroRepository.getReferenceById(idLivro);
+        return livroMapper.entityToDomain(livroEntity);
+    }
+
+
 }
