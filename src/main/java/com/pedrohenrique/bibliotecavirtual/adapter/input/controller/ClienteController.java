@@ -64,12 +64,12 @@ public class ClienteController implements ClienteControllerSwagger {
     @Override
     @PreAuthorize("hasRole('CLIENTE') and #idCliente == authentication.principal.id")
     public ResponseEntity<List<EmprestimoResponseDTO>> visualizarTodosOsEmprestimos(Long idCliente) {
-        var listaResponse = clienteUseCase.visualizarTodosOsEmprestimos().stream().map(emp -> emprestimoMapper.toResponse(emp)).toList();
+        var listaResponse = clienteUseCase.visualizarTodosOsEmprestimos().stream().map(emprestimoMapper::toResponse).toList();
         return ResponseEntity.ok().body(listaResponse);
     }
 
     @Override
-    @PreAuthorize("hasRole('CLIENTE') and #emprestimoRequestDTO.idUsuario() == authentication.principal.id")
+    @PreAuthorize("hasRole('CLIENTE') and #emprestimoRequestDTO.clienteId() == authentication.principal.id")
     public ResponseEntity<EmprestimoResponseDTO> realizarEmprestimo(EmprestimoRequestDTO emprestimoRequestDTO) {
         var emprestimo = emprestimoMapper.toDomain(emprestimoRequestDTO);
         var emprestimoCadastrado = clienteUseCase.realizarEmprestimo(emprestimo);
