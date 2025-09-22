@@ -75,7 +75,7 @@ public class EmprestimoValidate {
 
     private void validarIdsLivros(Emprestimo emprestimo) {
         for (Long idLivro : emprestimo.getIdLivros()) {
-            if (idLivro == null || livroOutputPort.existsById(idLivro)) {
+            if (idLivro == null || !livroOutputPort.existsById(idLivro)) {
                 throw new LivroInvalidoException(mensagemErroLivroIndisponivel + " ID: " + idLivro);
             }
             var livro = livroOutputPort.pegarReferenciaPorId(idLivro);
