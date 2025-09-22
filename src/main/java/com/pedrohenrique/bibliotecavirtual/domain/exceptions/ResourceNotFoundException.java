@@ -1,7 +1,11 @@
 package com.pedrohenrique.bibliotecavirtual.domain.exceptions;
 
 
-public class ResourceNotFoundException extends RuntimeException {
+import org.springframework.http.HttpStatus;
+import org.springframework.web.bind.annotation.ResponseStatus;
+
+@ResponseStatus(HttpStatus.NO_CONTENT)
+public class ResourceNotFoundException extends BusinessException {
     public ResourceNotFoundException(String message) {
         super(message);
     }

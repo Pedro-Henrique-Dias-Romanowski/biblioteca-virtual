@@ -4,6 +4,7 @@ import com.pedrohenrique.bibliotecavirtual.adapter.input.controller.swagger.Livr
 import com.pedrohenrique.bibliotecavirtual.adapter.input.dto.request.LivroRequestDTO;
 import com.pedrohenrique.bibliotecavirtual.adapter.input.dto.response.LivroResponseDTO;
 import com.pedrohenrique.bibliotecavirtual.adapter.input.mappers.LivroMapper;
+import com.pedrohenrique.bibliotecavirtual.domain.exceptions.BusinessException;
 import com.pedrohenrique.bibliotecavirtual.domain.exceptions.DataBaseException;
 import com.pedrohenrique.bibliotecavirtual.domain.usecase.LivroUseCase;
 import org.springframework.http.HttpStatus;
@@ -49,12 +50,12 @@ public class LivroController implements LivroControllerSwagger {
     @PreAuthorize("hasAnyRole('ADMIN', 'CLIENTE')")
     public ResponseEntity<Optional<LivroResponseDTO>> buscarLivroPorId(Long idLivro){
         var livro = livroUseCase.buscarLivroPorId(idLivro);
-        return ResponseEntity.ok().body(livro.map(livroMapper::toResponse));
+        return livro.isPresent() ? ResponseEntity.ok().body(livro.map(livroMapper::toResponse)) :  ResponseEntity.noContent().build();
     }
 
     @Override
     @PreAuthorize("hasRole('ADMIN')")
-    public ResponseEntity<Void> removerLivro(Long idLivro) throws DataBaseException {
+    public ResponseEntity<Void> removerLivro(Long idLivro) throws Exception, BusinessException {
         livroUseCase.removerLivro(idLivro);
         return ResponseEntity.status(HttpStatus.NO_CONTENT).build();
     }

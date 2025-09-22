@@ -65,4 +65,9 @@ public class ClienteAdapter implements ClienteOutputPort {
     public boolean existsByEmail(Cliente cliente) {
         return clienteRepository.existsByEmailIgnoreCase(cliente.getEmail());
     }
+
+    @Override
+    public boolean existsById(Long id) {
+        return clienteRepository.existsById(id);
+    }
 }

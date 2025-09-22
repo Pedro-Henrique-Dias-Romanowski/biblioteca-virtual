@@ -1,7 +1,7 @@
 package com.pedrohenrique.bibliotecavirtual.domain.usecase;
 
 import com.pedrohenrique.bibliotecavirtual.domain.entity.Emprestimo;
-import com.pedrohenrique.bibliotecavirtual.domain.exceptions.EmprestimoInvalidoException;
+import com.pedrohenrique.bibliotecavirtual.domain.exceptions.BusinessException;
 import com.pedrohenrique.bibliotecavirtual.domain.port.output.EmprestimoOutputPort;
 import com.pedrohenrique.bibliotecavirtual.domain.usecase.validate.EmprestimoValidate;
 import org.springframework.stereotype.Service;
@@ -22,11 +22,12 @@ public class EmprestimoUseCase {
     }
 
     public Emprestimo realizarEmprestimo(Emprestimo emprestimo) {
-        if (emprestimoValidate.validarEmprestimo(emprestimo)) {
+        try{
+            emprestimoValidate.validarEmprestimo(emprestimo);
             emprestimo.setDataEmprestimo(LocalDate.now());
             return emprestimoOutputPort.realizarEmprestimo(emprestimo);
-        } else {
-            throw new EmprestimoInvalidoException("Dados do empréstimo inválido, tente novamente!");
+        } catch (BusinessException e){
+            throw new BusinessException(e.getMessage());
         }
     }
 

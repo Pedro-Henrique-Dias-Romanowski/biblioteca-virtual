@@ -11,7 +11,7 @@ public interface LivroOutputPort {
     List<Livro> visualizaTodosOsLivros();
     Optional<Livro> buscarLivroPorId(Long idLivro);
     void removerLivro(Long idLivro);
-    boolean existeLivroPorId(Long idLivro);
-    boolean existeLivroPorTitulo(String titulo);
+    boolean existsById(Long idLivro);
+    boolean existsByTitulo(String titulo);
     Livro pegarReferenciaPorId(Long idLivro);
 }

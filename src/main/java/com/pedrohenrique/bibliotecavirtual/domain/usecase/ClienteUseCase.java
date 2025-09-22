@@ -4,7 +4,7 @@ import com.pedrohenrique.bibliotecavirtual.domain.entity.Cliente;
 import com.pedrohenrique.bibliotecavirtual.domain.entity.Emprestimo;
 import com.pedrohenrique.bibliotecavirtual.domain.enums.Perfil;
 import com.pedrohenrique.bibliotecavirtual.domain.exceptions.DataBaseException;
-import com.pedrohenrique.bibliotecavirtual.domain.exceptions.EmprestimoInvalidoException;
+import com.pedrohenrique.bibliotecavirtual.domain.exceptions.BusinessException;
 import com.pedrohenrique.bibliotecavirtual.domain.port.output.ClienteOutputPort;
 import com.pedrohenrique.bibliotecavirtual.domain.usecase.validate.ClienteValidate;
 import org.springframework.beans.factory.annotation.Value;
@@ -32,20 +32,17 @@ public class ClienteUseCase {
     }
 
     public Cliente cadastrarCliente(Cliente cliente) throws DataBaseException {
-        if (clienteValidate.validarCadastroCliente(cliente)) {
+        try{
+            clienteValidate.validarCliente(cliente);
             cliente.setPerfil(Perfil.CLIENTE);
             return clienteOutputPort.cadastrarCliente(cliente);
-        } else {
-            throw new DataBaseException("Cliente nulo ou já cadastrado");
+        } catch (BusinessException e){
+            throw new BusinessException(e.getMessage());
         }
     }
 
     public Emprestimo realizarEmprestimo(Emprestimo emprestimo) {
-        if (emprestimo != null) {
-            return emprestimoUseCase.realizarEmprestimo(emprestimo);
-        } else {
-            throw new EmprestimoInvalidoException(mensagemErroEmprestimoGenerica);
-        }
+        return emprestimoUseCase.realizarEmprestimo(emprestimo);
     }
 
     public List<Emprestimo> visualizarTodosOsEmprestimos(){

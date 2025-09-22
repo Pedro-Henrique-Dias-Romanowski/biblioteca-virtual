@@ -2,7 +2,9 @@ package com.pedrohenrique.bibliotecavirtual.domain.usecase;
 
 import com.pedrohenrique.bibliotecavirtual.domain.entity.Livro;
 import com.pedrohenrique.bibliotecavirtual.domain.exceptions.DataBaseException;
+import com.pedrohenrique.bibliotecavirtual.domain.exceptions.BusinessException;
 import com.pedrohenrique.bibliotecavirtual.domain.port.output.LivroOutputPort;
+import com.pedrohenrique.bibliotecavirtual.domain.usecase.validate.LivroValidate;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -13,15 +15,19 @@ public class LivroUseCase {
 
     private final LivroOutputPort livroOutputPort;
 
-    public LivroUseCase(LivroOutputPort livroOutputPort) {
+    private final LivroValidate livroValidate;
+
+    public LivroUseCase(LivroOutputPort livroOutputPort, LivroValidate livroValidate) {
         this.livroOutputPort = livroOutputPort;
+        this.livroValidate = livroValidate;
     }
 
     public Livro cadastrarLivro(Livro livro) throws DataBaseException {
-        if (livro != null && !livroOutputPort.existeLivroPorTitulo(livro.getTitulo())){
+        try{
+            livroValidate.validarLivro(livro);
             return livroOutputPort.cadastrarLivro(livro);
-        } else {
-            throw new DataBaseException("Livro nulo ou já existente");
+        } catch (BusinessException e){
+            throw new BusinessException(e.getMessage());
         }
     }
 
@@ -30,19 +36,15 @@ public class LivroUseCase {
     }
 
     public Optional<Livro> buscarLivroPorId(Long idLivro){
-        if (idLivro != null && livroOutputPort.existeLivroPorId(idLivro)){
-            return livroOutputPort.buscarLivroPorId(idLivro);
-        } else {
-            return Optional.empty();
-        }
+        return livroOutputPort.buscarLivroPorId(idLivro);
     }
 
-
     public void removerLivro(Long idLivro) throws DataBaseException {
-        if (idLivro != null && livroOutputPort.existeLivroPorId(idLivro)){
+        try{
+            livroValidate.validarIdLivro(idLivro);
             livroOutputPort.removerLivro(idLivro);
-        } else {
-            throw new DataBaseException("ID do livro nulo ou inexistente");
+        } catch (BusinessException e){
+            throw new BusinessException(e.getMessage());
         }
     }
 }

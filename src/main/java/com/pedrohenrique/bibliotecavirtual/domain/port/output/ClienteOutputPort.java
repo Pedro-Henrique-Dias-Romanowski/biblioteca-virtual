@@ -10,4 +10,5 @@ public interface ClienteOutputPort {
     Emprestimo realizarEmprestimo(Emprestimo emprestimo);
     Cliente cadastrarCliente(Cliente cliente);
     boolean existsByEmail(Cliente cliente);
+    boolean existsById(Long id);
 }

@@ -54,8 +54,8 @@ public class LivroAdapter implements LivroOutputPort {
     }
 
     @Override
-    public boolean existeLivroPorId(Long idLivro) {
-        return livroRepository.existsById(idLivro);
+    public boolean existsById(Long idLivro) {
+        return !livroRepository.existsById(idLivro);
     }
 
     @Override
