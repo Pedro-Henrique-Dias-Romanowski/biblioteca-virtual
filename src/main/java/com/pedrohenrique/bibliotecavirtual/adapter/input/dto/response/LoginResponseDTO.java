@@ -7,6 +7,7 @@ import java.time.LocalDateTime;
 public record LoginResponseDTO(
         String token,
         LocalDateTime dataHoraLogin,
-        Perfil perfilAtribuido
+        Perfil perfilAtribuido,
+        Long id
 ) {
 }

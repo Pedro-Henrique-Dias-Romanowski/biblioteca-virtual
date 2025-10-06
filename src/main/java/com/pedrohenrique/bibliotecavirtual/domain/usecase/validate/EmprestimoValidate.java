@@ -58,8 +58,13 @@ public class EmprestimoValidate {
     }
 
     private void validarDataDevolucaoLivro(Emprestimo emprestimo){
+        if (emprestimo.getDataDevolucao() == null)
+            throw new DataEmprestimoInvalidoException(mensagemErroDataDevolucaoEmprestimo);
         if (emprestimo.getDataDevolucao().isBefore(emprestimo.getDataEmprestimo()))
             throw new DataEmprestimoInvalidoException(mensagemErroDataDevolucaoEmprestimo);
+        if (emprestimo.getDataDevolucao().isAfter(emprestimo.getDataEmprestimo().plusDays(15))){
+            throw new DataEmprestimoInvalidoException(mensagemErroDataDevolucaoEmprestimo);
+        }
     }
 
     private void validarNulidadeIdCliente(Emprestimo emprestimo){
@@ -74,7 +79,10 @@ public class EmprestimoValidate {
     }
 
     private void validarIdsLivros(Emprestimo emprestimo) {
-        for (Long idLivro : emprestimo.getIdLivros()) {
+        if (emprestimo.getLivros() == null || emprestimo.getLivros().isEmpty()) {
+            throw new LivroInvalidoException(mensagemErroLivroIndisponivel);
+        }
+        for (Long idLivro : emprestimo.getLivros()) {
             if (idLivro == null || !livroOutputPort.existsById(idLivro)) {
                 throw new LivroInvalidoException(mensagemErroLivroIndisponivel + " ID: " + idLivro);
             }
@@ -87,7 +95,7 @@ public class EmprestimoValidate {
 
 
     private void validarQuantidadesLivrosEmprestimo(Emprestimo emprestimo){
-        if (((emprestimo.getIdLivros().size() > Constantes.QUANTIDADE_MAX_NUMERO_EMPRESTIMO)))
+        if (((emprestimo.getLivros().size() > Constantes.QUANTIDADE_MAX_NUMERO_EMPRESTIMO)))
             throw new QuantidadeMaximaLivrosEmprestimoException(mensagemQuantidadeMaximaLivrosEmprestimos);
     }
 }

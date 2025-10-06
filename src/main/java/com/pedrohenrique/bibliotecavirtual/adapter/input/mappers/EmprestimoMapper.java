@@ -23,7 +23,7 @@ public interface EmprestimoMapper {
     EmprestimoResponseDTO toResponse(Emprestimo emprestimo);
 
     @Mapping(target = "clienteId", source = "clienteId", qualifiedByName = "mapCliente")
-    @Mapping(target = "idLivros", source = "idLivros", qualifiedByName = "mapLivro")
+    @Mapping(target = "livros", source = "livros", qualifiedByName = "mapLivro")
     EmprestimoEntity toEntity(Emprestimo emprestimo);
 
     @Named("mapCliente")
@@ -51,7 +51,7 @@ public interface EmprestimoMapper {
     }
 
     @Mapping(target = "clienteId", source = "clienteId.id")
-    @Mapping(target = "idLivros", source = "idLivros", qualifiedByName = "mapLivroDomain")
+    @Mapping(target = "livros", source = "livros", qualifiedByName = "mapLivroDomain")
     Emprestimo entityToDomain(EmprestimoEntity entity);
 
 }

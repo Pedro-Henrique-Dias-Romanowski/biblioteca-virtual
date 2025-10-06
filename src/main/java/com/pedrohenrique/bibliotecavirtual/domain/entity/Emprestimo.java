@@ -14,7 +14,7 @@ import java.util.List;
 public class Emprestimo {
 
     private Long id;
-    private List<Long> idLivros;
+    private List<Long> livros;
     private Long clienteId;
     private LocalDate dataEmprestimo;
     private LocalDate dataDevolucao;

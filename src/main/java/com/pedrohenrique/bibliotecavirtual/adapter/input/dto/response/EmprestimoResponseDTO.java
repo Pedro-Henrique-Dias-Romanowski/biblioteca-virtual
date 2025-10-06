@@ -5,7 +5,7 @@ import java.util.List;
 
 public record EmprestimoResponseDTO(
         Long idEmprestimo,
-        List<Long> idLivro,
+        List<Long> livros,
         LocalDate dataEmprestimo,
         LocalDate dataDevolucao
 ) {

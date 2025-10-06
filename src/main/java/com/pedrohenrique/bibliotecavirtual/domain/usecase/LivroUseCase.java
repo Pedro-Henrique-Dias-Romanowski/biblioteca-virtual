@@ -24,7 +24,8 @@ public class LivroUseCase {
 
     public Livro cadastrarLivro(Livro livro) throws DataBaseException {
         try{
-            livroValidate.validarLivro(livro);
+            livro.setDisponivel(true);
+            livroValidate.validarCadastroLivro(livro);
             return livroOutputPort.cadastrarLivro(livro);
         } catch (BusinessException e){
             throw new BusinessException(e.getMessage());

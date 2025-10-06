@@ -16,6 +16,8 @@ public record LivroRequestDTO(
         String editora,
         @NotBlank
         @Valid
-        Integer anoPublicacao
+        Integer anoPublicacao,
+
+        Boolean disponivel
 ) {
 }

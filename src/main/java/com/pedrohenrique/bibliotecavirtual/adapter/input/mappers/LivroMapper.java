@@ -12,7 +12,7 @@ import java.util.Optional;
 @Mapper(componentModel = "spring")
 public interface LivroMapper {
 
-    @Mapping(target = "disponivel", ignore = true)
+
     @Mapping(target = "id", ignore = true)
     Livro toDomain(LivroRequestDTO livroRequestDTO);
 

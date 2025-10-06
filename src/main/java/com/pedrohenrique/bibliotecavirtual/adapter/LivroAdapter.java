@@ -3,6 +3,7 @@ package com.pedrohenrique.bibliotecavirtual.adapter;
 import com.pedrohenrique.bibliotecavirtual.adapter.input.mappers.LivroMapper;
 import com.pedrohenrique.bibliotecavirtual.adapter.output.repository.LivroRepository;
 import com.pedrohenrique.bibliotecavirtual.domain.entity.Livro;
+import com.pedrohenrique.bibliotecavirtual.domain.exceptions.livro.LivroInvalidoException;
 import com.pedrohenrique.bibliotecavirtual.domain.port.output.LivroOutputPort;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
@@ -55,7 +56,7 @@ public class LivroAdapter implements LivroOutputPort {
 
     @Override
     public boolean existsById(Long idLivro) {
-        return !livroRepository.existsById(idLivro);
+        return livroRepository.existsById(idLivro);
     }
 
     @Override
@@ -66,7 +67,7 @@ public class LivroAdapter implements LivroOutputPort {
 
     @Override
     public Livro pegarReferenciaPorId(Long idLivro) {
-        var livroEntity = livroRepository.getReferenceById(idLivro);
+        var livroEntity = livroRepository.findById((idLivro)).orElseThrow(() -> new LivroInvalidoException("Livro não encontrado: ID: " + idLivro));
         return livroMapper.entityToDomain(livroEntity);
     }
 

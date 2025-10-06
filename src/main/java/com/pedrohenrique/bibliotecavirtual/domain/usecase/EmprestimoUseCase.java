@@ -4,6 +4,7 @@ import com.pedrohenrique.bibliotecavirtual.domain.entity.Emprestimo;
 import com.pedrohenrique.bibliotecavirtual.domain.exceptions.BusinessException;
 import com.pedrohenrique.bibliotecavirtual.domain.port.output.EmprestimoOutputPort;
 import com.pedrohenrique.bibliotecavirtual.domain.usecase.validate.EmprestimoValidate;
+import com.pedrohenrique.bibliotecavirtual.domain.utils.Constantes;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
@@ -23,8 +24,8 @@ public class EmprestimoUseCase {
 
     public Emprestimo realizarEmprestimo(Emprestimo emprestimo) {
         try{
-            emprestimoValidate.validarEmprestimo(emprestimo);
             emprestimo.setDataEmprestimo(LocalDate.now());
+            emprestimoValidate.validarEmprestimo(emprestimo);
             return emprestimoOutputPort.realizarEmprestimo(emprestimo);
         } catch (BusinessException e){
             throw new BusinessException(e.getMessage());
