@@ -13,17 +13,13 @@ public class ClienteValidate{
 
     private final ClienteOutputPort clienteOutputPort;
 
-    @Value("mensagem.erro.cliente.email.invalido")
+    @Value("${mensagem.erro.cliente.email.invalido}")
     private String mensagemErroEmailInvalido;
 
-    @Value("mensagem.erro.cliente.nao.encontrado")
-    private String mensagemErroClienteNaoEcontrado;
-
-
-    @Value("mensagem.erro.cliente.email.existente")
+    @Value("${mensagem.erro.cliente.email.existente}")
     private String mensagemErroEmailExistente;
 
-    @Value("mensagem.erro.dados.cliente.id.nulo")
+    @Value("${mensagem.erro.dados.cliente.id.nulo}")
     private String mensagemErroIdClienteNulo;
 
     public ClienteValidate(ClienteOutputPort clienteOutputPort) {

@@ -40,17 +40,6 @@ public class ClienteAdapter implements ClienteOutputPort {
 
 
     @Override
-    public List<Emprestimo> visualizarTodosOsEmprestimos() {
-        return List.of();
-    }
-
-    @Override
-    @Transactional
-    public Emprestimo realizarEmprestimo(Emprestimo emprestimo){
-        return emprestimoAdapter.realizarEmprestimo(emprestimo);
-    }
-
-    @Override
     @Transactional
     public Cliente cadastrarCliente(Cliente cliente){
         var clienteEntity = clienteMapper.toEntity(cliente);

@@ -15,9 +15,6 @@ import java.util.List;
 @Service
 public class ClienteUseCase {
 
-    @Value(value = "mensagem.erro.emprestimo.generica")
-    private String mensagemErroEmprestimoGenerica;
-
     private final ClienteOutputPort clienteOutputPort;
 
     private final ClienteValidate clienteValidate;

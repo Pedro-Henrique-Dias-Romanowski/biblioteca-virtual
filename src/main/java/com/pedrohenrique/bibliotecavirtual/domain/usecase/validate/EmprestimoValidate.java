@@ -19,22 +19,22 @@ public class EmprestimoValidate {
 
     private final ClienteOutputPort clienteOutputPort;
 
-    @Value(value = "mensagem.erro.emprestimo.nulo")
+    @Value(value = "${mensagem.erro.emprestimo.nulo}")
     private String mensagemErroEmprestimoNulo;
 
-    @Value(value = "mensagem.data.devolucao.emprestimo.invalida")
+    @Value(value = "${mensagem.data.devolucao.emprestimo.invalida}")
     private String mensagemErroDataDevolucaoEmprestimo;
 
-    @Value(value = "mensagem.erro.dados.cliente.id.nulo")
+    @Value(value = "${mensagem.erro.dados.cliente.id.nulo}")
     private String mensagemErroDadosClienteIdNulo;
 
-    @Value("mensagem.erro.dados.cliente.id.nao.encontrado")
+    @Value("${mensagem.erro.dados.cliente.id.nao.encontrado}")
     private String mensagemErroDadosClienteIdNaoEncontrado;
 
-    @Value("mensagem.quantidade.maxima.livros.emprestimo")
+    @Value("${mensagem.quantidade.maxima.livros.emprestimo}")
     private String mensagemQuantidadeMaximaLivrosEmprestimos;
 
-    @Value("mensagem.erro.livro.indisponivel")
+    @Value("${mensagem.erro.livro.indisponivel}")
     private String mensagemErroLivroIndisponivel;
 
     public EmprestimoValidate(LivroOutputPort livroOutputPort,ClienteOutputPort clienteOutputPort) {

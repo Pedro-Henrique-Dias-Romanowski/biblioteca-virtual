@@ -12,10 +12,10 @@ public class LivroValidate {
 
     private final LivroOutputPort livroOutputPort;
 
-    @Value("mensagem.erro.livro.nulo")
+    @Value("${mensagem.erro.livro.nulo}")
     private String mensagemErroLivroNulo;
 
-    @Value("mensagem.erro.livro.nao.encontrado")
+    @Value("${mensagem.erro.livro.nao.encontrado}")
     private String mensagemErroLivroNaoEcontrado;
 
     public LivroValidate(LivroOutputPort livroOutputPort) {

@@ -1,9 +1,8 @@
-package com.pedrohenrique.bibliotecavirtual.adapter.input.security.config;
+package com.pedrohenrique.bibliotecavirtual.config;
 
 import com.pedrohenrique.bibliotecavirtual.adapter.output.repository.AdministradorRepository;
 import com.pedrohenrique.bibliotecavirtual.adapter.output.repository.ClienteRepository;
 import com.pedrohenrique.bibliotecavirtual.adapter.service.TokenService;
-import com.pedrohenrique.bibliotecavirtual.domain.enums.Perfil;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
