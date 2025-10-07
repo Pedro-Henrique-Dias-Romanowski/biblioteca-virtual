@@ -24,7 +24,7 @@ public class EmprestimoEntity {
 
     @ManyToMany
     @JoinTable(
-            name = "livro_empresimo",
+            name = "livro_emprestimo",
             joinColumns = @JoinColumn(name = "emprestimo_id"),
             inverseJoinColumns = @JoinColumn(name = "livro_id")
     )
@@ -32,5 +32,4 @@ public class EmprestimoEntity {
 
     private LocalDate dataEmprestimo;
     private LocalDate dataDevolucao;
-    private Boolean devolvido;
 }

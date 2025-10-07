@@ -1,6 +1,7 @@
 package com.pedrohenrique.bibliotecavirtual.adapter.input.dto.request;
 
 import jakarta.validation.Valid;
+import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
 
 public record ClienteRequestDTO(
@@ -10,6 +11,7 @@ public record ClienteRequestDTO(
         String nome,
         @NotBlank
         @Valid
+        @Email
         String email,
         @NotBlank
         @Valid

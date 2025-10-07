@@ -5,6 +5,7 @@ import com.pedrohenrique.bibliotecavirtual.domain.exceptions.cliente.ClienteInva
 import com.pedrohenrique.bibliotecavirtual.domain.exceptions.emprestimo.DataEmprestimoInvalidoException;
 import com.pedrohenrique.bibliotecavirtual.domain.exceptions.emprestimo.EmprestimoNuloException;
 import com.pedrohenrique.bibliotecavirtual.domain.exceptions.livro.LivroInvalidoException;
+import com.pedrohenrique.bibliotecavirtual.domain.exceptions.livro.LivroNaoEcontradoException;
 import com.pedrohenrique.bibliotecavirtual.domain.exceptions.livro.QuantidadeMaximaLivrosEmprestimoException;
 import com.pedrohenrique.bibliotecavirtual.domain.port.output.ClienteOutputPort;
 import com.pedrohenrique.bibliotecavirtual.domain.port.output.LivroOutputPort;
@@ -44,10 +45,10 @@ public class EmprestimoValidate {
 
     public void validarEmprestimo(Emprestimo emprestimo){
         validarNulidadeEmprestimo(emprestimo);
+        validarLivros(emprestimo);
         validarDataDevolucaoLivro(emprestimo);
         validarNulidadeIdCliente(emprestimo);
         validarExistenciaIdCliente(emprestimo);
-        validarIdsLivros(emprestimo);
         validarQuantidadesLivrosEmprestimo(emprestimo);
     }
 
@@ -78,17 +79,24 @@ public class EmprestimoValidate {
             throw new ClienteInvalidoException(mensagemErroDadosClienteIdNaoEncontrado);
     }
 
-    private void validarIdsLivros(Emprestimo emprestimo) {
-        if (emprestimo.getLivros() == null || emprestimo.getLivros().isEmpty()) {
+    private void validarLivros(Emprestimo emprestimo){
+        if (emprestimo.getLivros() == null || emprestimo.getLivros().isEmpty()){
             throw new LivroInvalidoException(mensagemErroLivroIndisponivel);
-        }
-        for (Long idLivro : emprestimo.getLivros()) {
-            if (idLivro == null || !livroOutputPort.existsById(idLivro)) {
-                throw new LivroInvalidoException(mensagemErroLivroIndisponivel + " ID: " + idLivro);
-            }
-            var livro = livroOutputPort.pegarReferenciaPorId(idLivro);
-            if (!livro.getDisponivel()) {
-                throw new LivroInvalidoException(mensagemErroLivroIndisponivel + " ID: " + livro.getId());
+        } else {
+            for (Long idLivro : emprestimo.getLivros()){
+                var livro = livroOutputPort.buscarLivroPorId(idLivro);
+                if (idLivro == null){
+                    throw new LivroInvalidoException(mensagemErroLivroIndisponivel + " ID: " + idLivro);
+                }
+                if (livro.isEmpty()){
+                    throw new LivroInvalidoException(mensagemErroLivroIndisponivel + " ID: " + idLivro);
+                }
+                if (!livroOutputPort.existsById(idLivro)){
+                    throw new LivroNaoEcontradoException(mensagemErroLivroIndisponivel + " ID: " + idLivro);
+                }
+                if (!livro.get().getDisponivel()){
+                    throw new LivroInvalidoException(mensagemErroLivroIndisponivel + " ID: " + livro.get().getId());
+                }
             }
         }
     }

@@ -4,7 +4,9 @@ import com.pedrohenrique.bibliotecavirtual.domain.entity.Emprestimo;
 import com.pedrohenrique.bibliotecavirtual.domain.exceptions.BusinessException;
 import com.pedrohenrique.bibliotecavirtual.domain.port.output.EmprestimoOutputPort;
 import com.pedrohenrique.bibliotecavirtual.domain.usecase.validate.EmprestimoValidate;
-import com.pedrohenrique.bibliotecavirtual.domain.utils.Constantes;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
@@ -17,6 +19,14 @@ public class EmprestimoUseCase {
 
     private final EmprestimoOutputPort emprestimoOutputPort;
 
+    @Value("${mensagem.emprestimo.confirmado.sucesso}")
+    private String emprestimoConfirmadoSucesso;
+
+    @Value("${mensagem.cliente.emprestimo}")
+    private String mensagemBuscaEmprestimo;
+
+    private final Logger logger = LoggerFactory.getLogger(EmprestimoUseCase.class);
+
     public EmprestimoUseCase(EmprestimoValidate emprestimoValidate, EmprestimoOutputPort emprestimoOutputPort) {
         this.emprestimoValidate = emprestimoValidate;
         this.emprestimoOutputPort = emprestimoOutputPort;
@@ -26,13 +36,16 @@ public class EmprestimoUseCase {
         try{
             emprestimo.setDataEmprestimo(LocalDate.now());
             emprestimoValidate.validarEmprestimo(emprestimo);
+            logger.info("{}{}", emprestimoConfirmadoSucesso, emprestimo.getId());
             return emprestimoOutputPort.realizarEmprestimo(emprestimo);
         } catch (BusinessException e){
+            logger.error("Erro ao realizar emprestimo: {}", e.getMessage());
             throw new BusinessException(e.getMessage());
         }
     }
 
     public List<Emprestimo> visualizarTodosOsEmprestimos(){
+        logger.info(mensagemBuscaEmprestimo);
         return emprestimoOutputPort.visualizarTodosOsEmprestimos();
     }
 }

@@ -5,53 +5,102 @@ import com.pedrohenrique.bibliotecavirtual.adapter.input.dto.response.Emprestimo
 import com.pedrohenrique.bibliotecavirtual.adapter.output.entity.ClienteEntity;
 import com.pedrohenrique.bibliotecavirtual.adapter.output.entity.EmprestimoEntity;
 import com.pedrohenrique.bibliotecavirtual.adapter.output.entity.LivroEntity;
+import com.pedrohenrique.bibliotecavirtual.adapter.output.repository.ClienteRepository;
+import com.pedrohenrique.bibliotecavirtual.adapter.output.repository.LivroRepository;
 import com.pedrohenrique.bibliotecavirtual.domain.entity.Emprestimo;
-import org.mapstruct.Mapper;
-import org.mapstruct.Mapping;
-import org.mapstruct.Named;
+import com.pedrohenrique.bibliotecavirtual.domain.exceptions.cliente.ClienteInvalidoException;
+import com.pedrohenrique.bibliotecavirtual.domain.exceptions.livro.LivroNaoEcontradoException;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.stereotype.Component;
 
 import java.util.List;
+import java.util.Objects;
 
-@Mapper(componentModel = "spring")
-public interface EmprestimoMapper {
+@Component
+public class EmprestimoMapper {
+
+    private final ClienteRepository clienteRepository;
+
+    private final LivroRepository livroRepository;
+
+    @Value("${mensagem.erro.dados.cliente.id.nao.encontrado}")
+    private String mensagemErroDadosClienteIdNaoEncontrado;
+
+    @Value("${mensagem.erro.livro.indisponivel}")
+    private String mensagemErroLivroIndisponivel;
 
 
-    @Mapping(target = "id", ignore = true)
-    Emprestimo toDomain(EmprestimoRequestDTO emprestimoRequestDTO);
-
-    @Mapping(target = "idEmprestimo", source = "id")
-    EmprestimoResponseDTO toResponse(Emprestimo emprestimo);
-
-    @Mapping(target = "clienteId", source = "clienteId", qualifiedByName = "mapCliente")
-    @Mapping(target = "livros", source = "livros", qualifiedByName = "mapLivro")
-    EmprestimoEntity toEntity(Emprestimo emprestimo);
-
-    @Named("mapCliente")
-    default ClienteEntity mapCliente(Long id) {
-        ClienteEntity cliente = new ClienteEntity();
-        cliente.setId(id);
-        return cliente;
+    public EmprestimoMapper(ClienteRepository clienteRepository, LivroRepository livroRepository) {
+        this.clienteRepository = clienteRepository;
+        this.livroRepository = livroRepository;
     }
 
-    @Named("mapLivro")
-    default List<LivroEntity> mapLivro(List<Long> ids) {
-        return ids.stream().map(id -> {
-            LivroEntity livro = new LivroEntity();
-            livro.setId(id);
-            return livro;
-        }).toList();
+    public Emprestimo toDomain(EmprestimoRequestDTO emprestimoRequestDTO){
+        Emprestimo emprestimo = new Emprestimo();
+        emprestimo.setClienteId(emprestimoRequestDTO.clienteId());
+        emprestimo.setLivros(emprestimoRequestDTO.livros());
+        emprestimo.setDataDevolucao(emprestimoRequestDTO.dataDevolucao());
+
+        return emprestimo;
     }
 
-    @Named("mapLivroDomain")
-    default List<Long> mapLivroDomain(List<LivroEntity> ids) {
-        return ids.stream().map(id -> {
-            LivroEntity livro = new LivroEntity();
-            return livro.getId();
-        }).toList();
+    public EmprestimoResponseDTO toResponse(Emprestimo emprestimo){
+        return new EmprestimoResponseDTO(
+                emprestimo.getId(),
+                emprestimo.getLivros(),
+                emprestimo.getDataEmprestimo(),
+                emprestimo.getDataDevolucao()
+        );
     }
 
-    @Mapping(target = "clienteId", source = "clienteId.id")
-    @Mapping(target = "livros", source = "livros", qualifiedByName = "mapLivroDomain")
-    Emprestimo entityToDomain(EmprestimoEntity entity);
+    public EmprestimoEntity toEntity(Emprestimo emprestimo){
+        EmprestimoEntity emprestimoEntity = new EmprestimoEntity();
+        emprestimoEntity.setId(emprestimo.getId());
+        emprestimoEntity.setClienteId(pegarReferenciaCliente(emprestimo.getClienteId()));
+        emprestimoEntity.setLivros(pegarReferenciaLivros(emprestimo.getLivros()));
+        emprestimoEntity.setDataEmprestimo(emprestimo.getDataEmprestimo());
+        emprestimoEntity.setDataDevolucao(emprestimo.getDataDevolucao());
+
+        return emprestimoEntity;
+    }
+
+    public Emprestimo entityToDomain(EmprestimoEntity emprestimoEntity){
+        Emprestimo emprestimo = new Emprestimo();
+        emprestimo.setId(emprestimoEntity.getId());
+        emprestimo.setClienteId(emprestimoEntity.getClienteId() != null ? emprestimoEntity.getClienteId().getId() : null);
+        emprestimo.setLivros(pegarIdsLivros(emprestimoEntity.getLivros()));
+        emprestimo.setDataEmprestimo(emprestimoEntity.getDataEmprestimo());
+        emprestimo.setDataDevolucao(emprestimoEntity.getDataDevolucao());
+
+        return emprestimo;
+    }
+
+    private List<Long> pegarIdsLivros(List<LivroEntity> livros){
+        if (livros == null){
+            return List.of();
+
+        }
+        return livros.stream()
+                .filter( l -> l != null && l.getId() != null)
+                .map(LivroEntity::getId)
+                .toList();
+    }
+
+    private ClienteEntity pegarReferenciaCliente(Long clienteId){
+        return clienteRepository.findById(clienteId).orElseThrow(() -> new ClienteInvalidoException(mensagemErroDadosClienteIdNaoEncontrado + clienteId));
+    }
+
+    private List<LivroEntity> pegarReferenciaLivros(List<Long> livros){
+        if (livros == null || livros.isEmpty()) {
+            return List.of();
+        }
+
+        return livros.stream().map(
+                id -> livroRepository.findById(id).orElseThrow(() -> new LivroNaoEcontradoException(mensagemErroLivroIndisponivel + id)))
+                .filter(Objects::nonNull)
+                .toList();
+
+    }
+
 
 }

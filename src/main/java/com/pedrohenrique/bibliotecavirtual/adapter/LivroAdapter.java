@@ -27,7 +27,6 @@ public class LivroAdapter implements LivroOutputPort {
     @Override
     public Livro cadastrarLivro(Livro livro){
         var livroEntity = livroMapper.toEntity(livro);
-        livroEntity.setDisponivel(true);
         var livroSalvo = livroRepository.save(livroEntity);
 
         return livroMapper.entityToDomain(livroSalvo);
