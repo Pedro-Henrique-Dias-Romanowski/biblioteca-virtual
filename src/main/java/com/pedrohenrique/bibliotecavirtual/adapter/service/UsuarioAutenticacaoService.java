@@ -7,6 +7,8 @@ import com.pedrohenrique.bibliotecavirtual.adapter.output.entity.AdministradorEn
 import com.pedrohenrique.bibliotecavirtual.adapter.output.entity.ClienteEntity;
 import com.pedrohenrique.bibliotecavirtual.adapter.output.repository.AdministradorRepository;
 import com.pedrohenrique.bibliotecavirtual.adapter.output.repository.ClienteRepository;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
@@ -22,6 +24,7 @@ public class UsuarioAutenticacaoService implements UserDetailsService {
 
     private final ClienteRepository clienteRepository;
     private final AdministradorRepository administradorRepository;
+    private final Logger logger = LoggerFactory.getLogger(UsuarioAutenticacaoService.class);
 
     @Value("${JWT_SECRET}")
     private String JWT_SECRET;
@@ -33,6 +36,7 @@ public class UsuarioAutenticacaoService implements UserDetailsService {
 
     @Override
     public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
+        logger.info("Procurando dados login do usuario {}", username);
         return clienteRepository.findByEmailIgnoreCase(username)
                 .map(user -> (UserDetails) user)
                 .or(() -> administradorRepository.findByEmailIgnoreCase(username)
@@ -49,7 +53,6 @@ public class UsuarioAutenticacaoService implements UserDetailsService {
                     .withExpiresAt(dataExpiracaoToken())
                     .sign(algorithm);
         } catch(JWTCreationException e){
-            // todo lançar um exceção correta, fazer isso depois que criar a exception handler e a exceção personalizada
             throw new RuntimeException("Erro ao gerar token JWT", e);
         }
     }
@@ -63,7 +66,6 @@ public class UsuarioAutenticacaoService implements UserDetailsService {
                     .withExpiresAt(dataExpiracaoToken())
                     .sign(algorithm);
         } catch(JWTCreationException e){
-            // todo lançar um exceção correta, fazer isso depois que criar a exception handler e a exceção personalizada
             throw new RuntimeException("Erro ao gerar token JWT", e);
         }
     }

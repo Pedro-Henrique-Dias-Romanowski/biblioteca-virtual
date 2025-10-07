@@ -14,19 +14,14 @@ import org.springframework.transaction.annotation.Transactional;
 public class ClienteAdapter implements ClienteOutputPort {
 
     private final ClienteMapper clienteMapper;
-    private final EmprestimoMapper emprestimoMapper;
     private final ClienteRepository clienteRepository;
-    private final EmprestimoRepository emprestimoRepository;
     private final PasswordEncoder passwordEncoder;
-    private final EmprestimoAdapter emprestimoAdapter;
 
-    public ClienteAdapter(ClienteMapper clienteMapper, EmprestimoMapper emprestimoMapper, ClienteRepository clienteRepository, EmprestimoRepository emprestimoRepository, PasswordEncoder passwordEncoder, EmprestimoAdapter emprestimoAdapter) {
+
+    public ClienteAdapter(ClienteMapper clienteMapper, ClienteRepository clienteRepository, PasswordEncoder passwordEncoder) {
         this.clienteMapper = clienteMapper;
-        this.emprestimoMapper = emprestimoMapper;
         this.clienteRepository = clienteRepository;
-        this.emprestimoRepository = emprestimoRepository;
         this.passwordEncoder = passwordEncoder;
-        this.emprestimoAdapter = emprestimoAdapter;
     }
 
 

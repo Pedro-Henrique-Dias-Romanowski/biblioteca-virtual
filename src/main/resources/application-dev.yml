@@ -15,3 +15,19 @@ spring:
       password: devpass
       jwt:
         secret: ${JWT_SECRET}
+  mail:
+    host: smtp.exemplo.com
+    port: 587
+    username: ${MAIL_HOST:pedro.romanowski02@gmail.com}
+    password: ${MAIL_PASSWORD:kkybdorqohqsrusm}
+    protocol: smtp
+    properties:
+      mail:
+        smtp:
+          auth: true
+          starttls:
+            enable: true
+          connectiontimeout: 5000
+          timeout: 5000
+          writetimeout: 5000
+

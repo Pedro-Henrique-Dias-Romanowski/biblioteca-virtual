@@ -19,12 +19,6 @@ public class EmprestimoUseCase {
 
     private final EmprestimoOutputPort emprestimoOutputPort;
 
-    @Value("${mensagem.emprestimo.confirmado.sucesso}")
-    private String emprestimoConfirmadoSucesso;
-
-    @Value("${mensagem.cliente.emprestimo}")
-    private String mensagemBuscaEmprestimo;
-
     private final Logger logger = LoggerFactory.getLogger(EmprestimoUseCase.class);
 
     public EmprestimoUseCase(EmprestimoValidate emprestimoValidate, EmprestimoOutputPort emprestimoOutputPort) {
@@ -36,7 +30,7 @@ public class EmprestimoUseCase {
         try{
             emprestimo.setDataEmprestimo(LocalDate.now());
             emprestimoValidate.validarEmprestimo(emprestimo);
-            logger.info("{}{}", emprestimoConfirmadoSucesso, emprestimo.getId());
+            logger.info("O emprestimo foi confirmado com sucesso: ID: {}", emprestimo.getId());
             return emprestimoOutputPort.realizarEmprestimo(emprestimo);
         } catch (BusinessException e){
             logger.error("Erro ao realizar emprestimo: {}", e.getMessage());
@@ -45,7 +39,7 @@ public class EmprestimoUseCase {
     }
 
     public List<Emprestimo> visualizarTodosOsEmprestimos(){
-        logger.info(mensagemBuscaEmprestimo);
+        logger.info("Buscando todos os emprestimos");
         return emprestimoOutputPort.visualizarTodosOsEmprestimos();
     }
 }

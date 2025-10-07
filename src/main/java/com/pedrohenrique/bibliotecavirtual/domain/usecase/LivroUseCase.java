@@ -20,18 +20,6 @@ public class LivroUseCase {
 
     private final LivroValidate livroValidate;
 
-    @Value("${mensagem.livro.cadastrado.sucesso}")
-    private String mensagemLivroCadastradoSucesso;
-
-    @Value("${mensagem.livro.removido.sucesso}")
-    private String mensagemLivroRemovidoSucesso;
-
-    @Value("${mensagem.livro.busca}")
-    private String mensagemBuscaLivros;
-
-    @Value("${mensagem.livro.busca.id")
-    private String mensagemLivroBuscaId;
-
     private final Logger logger = LoggerFactory.getLogger(LivroUseCase.class);
 
     public LivroUseCase(LivroOutputPort livroOutputPort, LivroValidate livroValidate) {
@@ -43,7 +31,7 @@ public class LivroUseCase {
         try{
             livro.setDisponivel(true);
             livroValidate.validarCadastroLivro(livro);
-            logger.info(mensagemLivroCadastradoSucesso);
+            logger.info("Livro do id {} cadastrado com sucesso", livro.getId());
             return livroOutputPort.cadastrarLivro(livro);
         } catch (BusinessException e){
             logger.error("Erro ao cadastrar livro: {}", e.getMessage());
@@ -52,19 +40,19 @@ public class LivroUseCase {
     }
 
     public List<Livro> visualizarTodosOsLivros(){
-        logger.info(mensagemBuscaLivros);
+        logger.info("Buscando todos os livros");
         return livroOutputPort.visualizaTodosOsLivros();
     }
 
     public Optional<Livro> buscarLivroPorId(Long idLivro){
-        logger.info("{}{}", mensagemLivroBuscaId, idLivro);
+        logger.info("Buscando livro do ID {}", idLivro);
         return livroOutputPort.buscarLivroPorId(idLivro);
     }
 
     public void removerLivro(Long idLivro) {
         try{
             livroValidate.validarIdLivro(idLivro);
-            logger.info("{} ID: {}", mensagemLivroRemovidoSucesso, idLivro);
+            logger.info("Livro do ID {} removido com sucesso", idLivro);
             livroOutputPort.removerLivro(idLivro);
         } catch (BusinessException e){
             logger.error("Erro ao remover livro: {}", e.getMessage());
