@@ -20,7 +20,7 @@ Foi utilizado o **Spring Security** com **tokens JWT**, garantindo segurança na
 ## ⚙️ Perfis de Execução  
 O projeto conta com diferentes perfis de execução:  
 - **Dev**: ambiente local, onde todos os serviços devem estar rodando manualmente.  
-- **Prod**: configurado para rodar com **Docker**, facilitando a execução da aplicação.Com as variáveis de ambiente dentro do .env configurada corretamente, basta executar:  
+- **Prod**: configurado para rodar com **Docker**, facilitando a execução da aplicação. Com as variáveis de ambiente dentro do .env configurada corretamente, basta executar:  
 
 ```bash
 docker-compose up
