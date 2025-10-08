@@ -4,8 +4,10 @@ import com.pedrohenrique.bibliotecavirtual.adapter.input.mappers.ClienteMapper;
 import com.pedrohenrique.bibliotecavirtual.adapter.input.mappers.EmprestimoMapper;
 import com.pedrohenrique.bibliotecavirtual.adapter.output.repository.ClienteRepository;
 import com.pedrohenrique.bibliotecavirtual.adapter.output.repository.EmprestimoRepository;
+import com.pedrohenrique.bibliotecavirtual.adapter.service.EmailService;
 import com.pedrohenrique.bibliotecavirtual.domain.entity.Cliente;
 import com.pedrohenrique.bibliotecavirtual.domain.port.output.ClienteOutputPort;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
@@ -16,12 +18,20 @@ public class ClienteAdapter implements ClienteOutputPort {
     private final ClienteMapper clienteMapper;
     private final ClienteRepository clienteRepository;
     private final PasswordEncoder passwordEncoder;
+    private final EmailService emailService;
+
+    @Value("${mensagem.cliente.cadastrado.sucesso}")
+    private String mensagemCadastradoSucesso;
+
+    @Value("${mensagem.saudacoes.cliente}")
+    private String mensagemSaudacoesCliente;
 
 
-    public ClienteAdapter(ClienteMapper clienteMapper, ClienteRepository clienteRepository, PasswordEncoder passwordEncoder) {
+    public ClienteAdapter(ClienteMapper clienteMapper, ClienteRepository clienteRepository, PasswordEncoder passwordEncoder, EmailService emailService) {
         this.clienteMapper = clienteMapper;
         this.clienteRepository = clienteRepository;
         this.passwordEncoder = passwordEncoder;
+        this.emailService = emailService;
     }
 
 
@@ -32,6 +42,7 @@ public class ClienteAdapter implements ClienteOutputPort {
         var senhaCliente = clienteEntity.getSenha();
         clienteEntity.setSenha(passwordEncoder.encode(senhaCliente));
         var clienteEntitySalvo = clienteRepository.save(clienteEntity);
+        emailService.enviarEmail(clienteEntitySalvo.getEmail(), mensagemCadastradoSucesso, mensagemSaudacoesCliente + clienteEntitySalvo.getNome());
 
         return clienteMapper.entityToDomain(clienteEntitySalvo);
     }

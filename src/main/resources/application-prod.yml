@@ -15,9 +15,9 @@ spring:
     jwt:
       secret: ${JWT_SECRET}
   mail:
-    host: smtp.exemplo.com
+    host: smtp.gmail.com
     port: 587
-    username: ${MAIL_HOST}
+    username: ${USER_HOST}
     password: ${MAIL_PASSWORD}
     protocol: smtp
     properties:
