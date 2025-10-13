@@ -9,4 +9,6 @@ public interface ClienteOutputPort {
     Cliente cadastrarCliente(Cliente cliente);
     boolean existsByEmail(Cliente cliente);
     boolean existsById(Long id);
+    void esqueciMinhaSenha(String email);
+    void alterarSenha(Integer codigo, String novaSenha, String confirmacaoNovaSenha, String email);
 }

@@ -1,12 +1,11 @@
 package com.pedrohenrique.bibliotecavirtual.adapter.input.controller.swagger;
 
 
+import com.pedrohenrique.bibliotecavirtual.adapter.input.dto.request.AlterarSenhaRequestDTO;
 import com.pedrohenrique.bibliotecavirtual.adapter.input.dto.request.ClienteRequestDTO;
 import com.pedrohenrique.bibliotecavirtual.adapter.input.dto.request.EmprestimoRequestDTO;
 import com.pedrohenrique.bibliotecavirtual.adapter.input.dto.request.LoginRequestDTO;
-import com.pedrohenrique.bibliotecavirtual.adapter.input.dto.response.ClienteResponseDTO;
-import com.pedrohenrique.bibliotecavirtual.adapter.input.dto.response.EmprestimoResponseDTO;
-import com.pedrohenrique.bibliotecavirtual.adapter.input.dto.response.LoginResponseDTO;
+import com.pedrohenrique.bibliotecavirtual.adapter.input.dto.response.*;
 import com.pedrohenrique.bibliotecavirtual.domain.exceptions.BusinessException;
 import com.pedrohenrique.bibliotecavirtual.domain.exceptions.DataBaseException;
 import io.swagger.v3.oas.annotations.Operation;
@@ -39,4 +38,12 @@ public interface ClienteControllerSwagger {
     @Operation(summary = "Realizar empréstimo", description = "Permite que o cliente realize o empréstimo de um ou mais livros na biblioteca")
     @PostMapping("/clientes/emprestimos")
     public ResponseEntity<EmprestimoResponseDTO> realizarEmprestimo(@RequestBody EmprestimoRequestDTO emprestimoRequestDTO) throws Exception, BusinessException;
+
+    @Operation(summary = "Esqueci minha senha", description = "Permite que o cliente recupere sua senha caso tenha esquecido")
+    @PostMapping("/clientes/esqueci-minha-senha")
+    public ResponseEntity<String> esqueciMinhaSenha(@RequestBody String email) throws Exception, BusinessException;
+
+    @Operation(summary = "Alterar senha", description = "Permite que o cliente altere a sua senha")
+    @PostMapping("/clientes/alterar-senha")
+    public ResponseEntity<AlterarSenhaResponseDTO> alterarSenha(@RequestBody AlterarSenhaRequestDTO alterarSenhaRequestDTO) throws Exception, BusinessException;
 }

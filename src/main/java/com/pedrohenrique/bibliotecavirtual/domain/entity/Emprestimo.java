@@ -18,4 +18,5 @@ public class Emprestimo {
     private Long clienteId;
     private LocalDate dataEmprestimo;
     private LocalDate dataDevolucao;
+    private Boolean ativo;
 }

@@ -49,7 +49,8 @@ public class EmprestimoMapper {
                 emprestimo.getId(),
                 emprestimo.getLivros(),
                 emprestimo.getDataEmprestimo(),
-                emprestimo.getDataDevolucao()
+                emprestimo.getDataDevolucao(),
+                emprestimo.getAtivo()
         );
     }
 

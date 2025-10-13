@@ -51,4 +51,22 @@ public class ClienteUseCase {
         logger.info("cliente realizando busca de seus emprestimos");
         return emprestimoUseCase.visualizarTodosOsEmprestimos();
     }
+
+    public void esqueciMinhaSenha(String email){
+        clienteValidate.validarEmailCliente(email);
+        clienteOutputPort.esqueciMinhaSenha(email);
+        logger.info("Solicitação de recuperação de senha enviada para o email {}", email);
+    }
+
+    public void alterarSenha(Integer codigo, String senha, String confirmacaoNovaSenha, String email){
+        try{
+            clienteValidate.validarAlteracaoSenha(senha, confirmacaoNovaSenha, email);
+            clienteOutputPort.alterarSenha(codigo, senha, confirmacaoNovaSenha, email);
+            logger.info("Senha do cliente alterada com sucesso");
+        } catch (BusinessException e){
+            logger.error("Erro ao alterar senha do cliente: {}", e.getMessage());
+            throw new BusinessException(e.getMessage());
+
+        }
+    };
 }

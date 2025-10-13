@@ -1,18 +1,19 @@
 package com.pedrohenrique.bibliotecavirtual.adapter.input.controller;
 
 import com.pedrohenrique.bibliotecavirtual.adapter.input.controller.swagger.ClienteControllerSwagger;
+import com.pedrohenrique.bibliotecavirtual.adapter.input.dto.request.AlterarSenhaRequestDTO;
 import com.pedrohenrique.bibliotecavirtual.adapter.input.dto.request.ClienteRequestDTO;
 import com.pedrohenrique.bibliotecavirtual.adapter.input.dto.request.EmprestimoRequestDTO;
 import com.pedrohenrique.bibliotecavirtual.adapter.input.dto.request.LoginRequestDTO;
-import com.pedrohenrique.bibliotecavirtual.adapter.input.dto.response.ClienteResponseDTO;
-import com.pedrohenrique.bibliotecavirtual.adapter.input.dto.response.EmprestimoResponseDTO;
-import com.pedrohenrique.bibliotecavirtual.adapter.input.dto.response.LoginResponseDTO;
+import com.pedrohenrique.bibliotecavirtual.adapter.input.dto.response.*;
 import com.pedrohenrique.bibliotecavirtual.adapter.input.mappers.ClienteMapper;
 import com.pedrohenrique.bibliotecavirtual.adapter.input.mappers.EmprestimoMapper;
 import com.pedrohenrique.bibliotecavirtual.adapter.output.entity.ClienteEntity;
 import com.pedrohenrique.bibliotecavirtual.adapter.service.UsuarioAutenticacaoService;
+import com.pedrohenrique.bibliotecavirtual.domain.exceptions.BusinessException;
 import com.pedrohenrique.bibliotecavirtual.domain.exceptions.DataBaseException;
 import com.pedrohenrique.bibliotecavirtual.domain.usecase.ClienteUseCase;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -35,6 +36,15 @@ public class ClienteController implements ClienteControllerSwagger {
     private final AuthenticationManager authenticationManager;
 
     private final UsuarioAutenticacaoService usuarioAutenticacaoService;
+
+    @Value("${mensagem.cliente.esqueci.minha.senha}")
+    private String mensagemClienteEsqueciMinhaSenha;
+
+    @Value("${mensagem.cliente.senha.alterada.sucesso}")
+    private String mensagemClienteSenhaAlteradaSucesso;
+
+    @Value("${mensagem.cliente.redirecionamento.pagina.login}")
+    private String mensagemClienteRedirecionamentoPaginaLogin;
 
     public ClienteController(ClienteMapper clienteMapper, EmprestimoMapper emprestimoMapper, ClienteUseCase clienteUseCase, AuthenticationManager authenticationManager, UsuarioAutenticacaoService usuarioAutenticacaoService) {
         this.clienteMapper = clienteMapper;
@@ -75,5 +85,17 @@ public class ClienteController implements ClienteControllerSwagger {
         var emprestimoCadastrado = clienteUseCase.realizarEmprestimo(emprestimo);
 
         return ResponseEntity.ok().body(emprestimoMapper.toResponse(emprestimoCadastrado));
+    }
+
+    @Override
+    public ResponseEntity<String> esqueciMinhaSenha(String email) throws Exception, BusinessException {
+        clienteUseCase.esqueciMinhaSenha(email);
+        return ResponseEntity.ok().body(mensagemClienteEsqueciMinhaSenha);
+    }
+
+    @Override
+    public ResponseEntity<AlterarSenhaResponseDTO> alterarSenha(AlterarSenhaRequestDTO alterarSenhaRequestDTO) throws Exception, BusinessException {
+        clienteUseCase.alterarSenha(alterarSenhaRequestDTO.codigo(), alterarSenhaRequestDTO.novaSenha(), alterarSenhaRequestDTO.confirmacacaoNovaSenha(), alterarSenhaRequestDTO.email());
+        return ResponseEntity.ok().body(new AlterarSenhaResponseDTO(mensagemClienteSenhaAlteradaSucesso, mensagemClienteRedirecionamentoPaginaLogin));
     }
 }

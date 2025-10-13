@@ -7,6 +7,7 @@ public record EmprestimoResponseDTO(
         Long idEmprestimo,
         List<Long> livros,
         LocalDate dataEmprestimo,
-        LocalDate dataDevolucao
+        LocalDate dataDevolucao,
+        Boolean ativo
 ) {
 }

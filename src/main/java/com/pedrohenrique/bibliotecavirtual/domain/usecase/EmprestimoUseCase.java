@@ -29,6 +29,7 @@ public class EmprestimoUseCase {
     public Emprestimo realizarEmprestimo(Emprestimo emprestimo) {
         try{
             emprestimo.setDataEmprestimo(LocalDate.now());
+            emprestimo.setAtivo(true);
             emprestimoValidate.validarEmprestimo(emprestimo);
             logger.info("O emprestimo foi confirmado com sucesso: ID: {}", emprestimo.getId());
             return emprestimoOutputPort.realizarEmprestimo(emprestimo);
