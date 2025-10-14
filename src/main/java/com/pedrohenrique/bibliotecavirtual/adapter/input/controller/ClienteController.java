@@ -1,10 +1,7 @@
 package com.pedrohenrique.bibliotecavirtual.adapter.input.controller;
 
 import com.pedrohenrique.bibliotecavirtual.adapter.input.controller.swagger.ClienteControllerSwagger;
-import com.pedrohenrique.bibliotecavirtual.adapter.input.dto.request.AlterarSenhaRequestDTO;
-import com.pedrohenrique.bibliotecavirtual.adapter.input.dto.request.ClienteRequestDTO;
-import com.pedrohenrique.bibliotecavirtual.adapter.input.dto.request.EmprestimoRequestDTO;
-import com.pedrohenrique.bibliotecavirtual.adapter.input.dto.request.LoginRequestDTO;
+import com.pedrohenrique.bibliotecavirtual.adapter.input.dto.request.*;
 import com.pedrohenrique.bibliotecavirtual.adapter.input.dto.response.*;
 import com.pedrohenrique.bibliotecavirtual.adapter.input.mappers.ClienteMapper;
 import com.pedrohenrique.bibliotecavirtual.adapter.input.mappers.EmprestimoMapper;
@@ -74,7 +71,7 @@ public class ClienteController implements ClienteControllerSwagger {
     @Override
     @PreAuthorize("hasRole('CLIENTE') and #idCliente == authentication.principal.id")
     public ResponseEntity<List<EmprestimoResponseDTO>> visualizarTodosOsEmprestimos(Long idCliente) {
-        var listaResponse = clienteUseCase.visualizarTodosOsEmprestimos().stream().map(emprestimoMapper::toResponse).toList();
+        var listaResponse = clienteUseCase.visualizarTodosOsEmprestimos(idCliente).stream().map(emprestimoMapper::toResponse).toList();
         return ResponseEntity.ok().body(listaResponse);
     }
 
@@ -88,14 +85,14 @@ public class ClienteController implements ClienteControllerSwagger {
     }
 
     @Override
-    public ResponseEntity<String> esqueciMinhaSenha(String email) throws Exception, BusinessException {
-        clienteUseCase.esqueciMinhaSenha(email);
-        return ResponseEntity.ok().body(mensagemClienteEsqueciMinhaSenha);
+    public ResponseEntity<EsqueciMinhaSenhaResponseDTO> esqueciMinhaSenha(EsqueciMinhaSenhaRequestDTO esqueciMinhaSenhaRequestDTO) throws Exception, BusinessException {
+        clienteUseCase.esqueciMinhaSenha(esqueciMinhaSenhaRequestDTO.email());
+        return ResponseEntity.ok().body(new EsqueciMinhaSenhaResponseDTO(mensagemClienteEsqueciMinhaSenha));
     }
 
     @Override
     public ResponseEntity<AlterarSenhaResponseDTO> alterarSenha(AlterarSenhaRequestDTO alterarSenhaRequestDTO) throws Exception, BusinessException {
-        clienteUseCase.alterarSenha(alterarSenhaRequestDTO.codigo(), alterarSenhaRequestDTO.novaSenha(), alterarSenhaRequestDTO.confirmacacaoNovaSenha(), alterarSenhaRequestDTO.email());
+        clienteUseCase.alterarSenha(alterarSenhaRequestDTO.codigo(), alterarSenhaRequestDTO.novaSenha(), alterarSenhaRequestDTO.confirmacaoNovaSenha(), alterarSenhaRequestDTO.email());
         return ResponseEntity.ok().body(new AlterarSenhaResponseDTO(mensagemClienteSenhaAlteradaSucesso, mensagemClienteRedirecionamentoPaginaLogin));
     }
 }

@@ -32,12 +32,12 @@ public class ClienteUseCase {
 
     public Cliente cadastrarCliente(Cliente cliente) {
         try{
-            clienteValidate.validarCliente(cliente);
+            clienteValidate.validarCadastroCliente(cliente);
             cliente.setPerfil(Perfil.CLIENTE);
-            logger.info("Cliente cadastrado com sucesso {}", cliente.getId());
+            logger.info("Cliente cadastrado com sucesso " +  cliente.getId());
             return clienteOutputPort.cadastrarCliente(cliente);
         } catch (BusinessException e){
-            logger.error("Erro ao cadastrar cliente: {}", e.getMessage());
+            logger.error("Erro ao cadastrar cliente: " + e.getMessage());
             throw new BusinessException(e.getMessage());
         }
     }
@@ -47,15 +47,15 @@ public class ClienteUseCase {
         return emprestimoUseCase.realizarEmprestimo(emprestimo);
     }
 
-    public List<Emprestimo> visualizarTodosOsEmprestimos(){
-        logger.info("cliente realizando busca de seus emprestimos");
-        return emprestimoUseCase.visualizarTodosOsEmprestimos();
+    public List<Emprestimo> visualizarTodosOsEmprestimos(Long idCliente){
+        logger.info("Cliente realizando busca de seus emprestimos");
+        return emprestimoUseCase.visualizarTodosOsEmprestimos(idCliente);
     }
 
     public void esqueciMinhaSenha(String email){
         clienteValidate.validarEmailCliente(email);
         clienteOutputPort.esqueciMinhaSenha(email);
-        logger.info("Solicitação de recuperação de senha enviada para o email {}", email);
+        logger.info("Solicitacao de recuperacao de senha enviada para o email {}", email);
     }
 
     public void alterarSenha(Integer codigo, String senha, String confirmacaoNovaSenha, String email){

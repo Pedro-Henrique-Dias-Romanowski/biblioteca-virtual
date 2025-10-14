@@ -16,5 +16,5 @@ public record AlterarSenhaRequestDTO(
         String novaSenha,
 
         @NotBlank
-        String confirmacacaoNovaSenha
+        String confirmacaoNovaSenha
 ) {}

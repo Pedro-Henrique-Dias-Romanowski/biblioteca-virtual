@@ -86,16 +86,16 @@ public class EmprestimoValidate {
             for (Long idLivro : emprestimo.getLivros()){
                 var livro = livroOutputPort.buscarLivroPorId(idLivro);
                 if (idLivro == null){
-                    throw new LivroInvalidoException(mensagemErroLivroIndisponivel + " ID: " + idLivro);
+                    throw new LivroInvalidoException(mensagemErroLivroIndisponivel);
                 }
                 if (livro.isEmpty()){
-                    throw new LivroInvalidoException(mensagemErroLivroIndisponivel + " ID: " + idLivro);
+                    throw new LivroInvalidoException(mensagemErroLivroIndisponivel);
                 }
                 if (!livroOutputPort.existsById(idLivro)){
-                    throw new LivroNaoEcontradoException(mensagemErroLivroIndisponivel + " ID: " + idLivro);
+                    throw new LivroNaoEcontradoException(mensagemErroLivroIndisponivel);
                 }
                 if (!livro.get().getDisponivel()){
-                    throw new LivroInvalidoException(mensagemErroLivroIndisponivel + " ID: " + livro.get().getId());
+                    throw new LivroInvalidoException(mensagemErroLivroIndisponivel );
                 }
             }
         }

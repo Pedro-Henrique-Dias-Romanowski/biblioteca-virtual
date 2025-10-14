@@ -47,6 +47,7 @@ public class EmprestimoMapper {
     public EmprestimoResponseDTO toResponse(Emprestimo emprestimo){
         return new EmprestimoResponseDTO(
                 emprestimo.getId(),
+                emprestimo.getClienteId(),
                 emprestimo.getLivros(),
                 emprestimo.getDataEmprestimo(),
                 emprestimo.getDataDevolucao(),

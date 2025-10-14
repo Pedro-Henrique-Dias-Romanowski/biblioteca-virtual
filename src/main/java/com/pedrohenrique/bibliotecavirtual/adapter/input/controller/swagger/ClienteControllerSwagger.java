@@ -1,10 +1,7 @@
 package com.pedrohenrique.bibliotecavirtual.adapter.input.controller.swagger;
 
 
-import com.pedrohenrique.bibliotecavirtual.adapter.input.dto.request.AlterarSenhaRequestDTO;
-import com.pedrohenrique.bibliotecavirtual.adapter.input.dto.request.ClienteRequestDTO;
-import com.pedrohenrique.bibliotecavirtual.adapter.input.dto.request.EmprestimoRequestDTO;
-import com.pedrohenrique.bibliotecavirtual.adapter.input.dto.request.LoginRequestDTO;
+import com.pedrohenrique.bibliotecavirtual.adapter.input.dto.request.*;
 import com.pedrohenrique.bibliotecavirtual.adapter.input.dto.response.*;
 import com.pedrohenrique.bibliotecavirtual.domain.exceptions.BusinessException;
 import com.pedrohenrique.bibliotecavirtual.domain.exceptions.DataBaseException;
@@ -41,7 +38,7 @@ public interface ClienteControllerSwagger {
 
     @Operation(summary = "Esqueci minha senha", description = "Permite que o cliente recupere sua senha caso tenha esquecido")
     @PostMapping("/clientes/esqueci-minha-senha")
-    public ResponseEntity<String> esqueciMinhaSenha(@RequestBody String email) throws Exception, BusinessException;
+    public ResponseEntity<EsqueciMinhaSenhaResponseDTO> esqueciMinhaSenha(@RequestBody EsqueciMinhaSenhaRequestDTO esqueciMinhaSenhaRequestDTO) throws Exception, BusinessException;
 
     @Operation(summary = "Alterar senha", description = "Permite que o cliente altere a sua senha")
     @PostMapping("/clientes/alterar-senha")

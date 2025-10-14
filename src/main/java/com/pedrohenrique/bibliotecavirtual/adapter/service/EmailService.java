@@ -28,12 +28,14 @@ public class EmailService {
 
     @Async
     public void enviarEmail(String emailUsuario, String assunto, String conteudo) {
+        String emailDoUsuario = emailUsuario.trim();
+        String emailOrigem = Constantes.EMAIL_ORIGEM.trim();
         MimeMessage message = mailSender.createMimeMessage();
         MimeMessageHelper helper = new MimeMessageHelper(message, "UTF-8");
 
         try {
-            helper.setFrom(Constantes.EMAIL_ORIGEM, Constantes.NOME_ENVIADOR);
-            helper.setTo(emailUsuario);
+            helper.setFrom(emailOrigem, Constantes.NOME_ENVIADOR);
+            helper.setTo(emailDoUsuario);
             helper.setSubject(assunto);
             helper.setText(conteudo, false);
         } catch(MessagingException | UnsupportedEncodingException e){

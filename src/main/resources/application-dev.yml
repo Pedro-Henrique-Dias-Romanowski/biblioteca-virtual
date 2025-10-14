@@ -14,11 +14,11 @@ spring:
       name: devuser
       password: devpass
       jwt:
-        secret: ${JWT_SECRET}
+        secret: ${JWT_SECRET:12345678}
   mail:
-    host: smtp.exemplo.com
-    port: 587
-    username: ${MAIL_HOST}
+    host: ${MAIL_HOST}
+    port: ${MAIL_PORT}
+    username: ${MAIL_USER}
     password: ${MAIL_PASSWORD}
     protocol: smtp
     properties:

@@ -36,6 +36,11 @@ public class ClienteValidate{
         validarExistenciaCliente(cliente);
     }
 
+    public void validarCadastroCliente(Cliente cliente){
+        validarEmailCliente(cliente.getEmail());
+        validarExistenciaCliente(cliente);
+    }
+
     public void validarAlteracaoSenha(String senha, String confirmacaoNovaSenha, String email){
         validarEmailCliente(email);
         validarSenha(senha, confirmacaoNovaSenha);
@@ -54,7 +59,7 @@ public class ClienteValidate{
     }
 
     private void validarSenha(String senha, String confirmacaoNovaSenha){
-        if (!confirmacaoNovaSenha.equals(senha)){
+        if (!senha.equals(confirmacaoNovaSenha)){
             throw new SenhaDiferenteException(mensagemClienteSenhasDiferentes);
         }
     }

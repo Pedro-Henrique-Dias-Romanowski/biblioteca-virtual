@@ -39,8 +39,8 @@ public class EmprestimoUseCase {
         }
     }
 
-    public List<Emprestimo> visualizarTodosOsEmprestimos(){
+    public List<Emprestimo> visualizarTodosOsEmprestimos(Long idCliente){
         logger.info("Buscando todos os emprestimos");
-        return emprestimoOutputPort.visualizarTodosOsEmprestimos();
+        return emprestimoOutputPort.visualizarTodosOsEmprestimos(idCliente);
     }
 }

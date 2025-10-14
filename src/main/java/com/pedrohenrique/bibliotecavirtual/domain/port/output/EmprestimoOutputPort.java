@@ -8,5 +8,5 @@ public interface EmprestimoOutputPort {
 
     Emprestimo realizarEmprestimo(Emprestimo emprestimo);
 
-    List<Emprestimo> visualizarTodosOsEmprestimos();
+    List<Emprestimo> visualizarTodosOsEmprestimos(Long idCliente);
 }

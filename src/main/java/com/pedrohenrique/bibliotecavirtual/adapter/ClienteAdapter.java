@@ -20,7 +20,7 @@ public class ClienteAdapter implements ClienteOutputPort {
     private final ClienteRepository clienteRepository;
     private final PasswordEncoder passwordEncoder;
     private final EmailService emailService;
-    private final String codigo = String.format("%04d", RandomUtils.nextInt(0, 10000));
+    private final String codigo = String.format("%04d", RandomUtils.nextInt(1, 10000));
 
     @Value("${mensagem.cliente.cadastrado.sucesso}")
     private String mensagemCadastradoSucesso;
@@ -49,7 +49,8 @@ public class ClienteAdapter implements ClienteOutputPort {
         var senhaCliente = clienteEntity.getSenha();
         clienteEntity.setSenha(passwordEncoder.encode(senhaCliente));
         var clienteEntitySalvo = clienteRepository.save(clienteEntity);
-        emailService.enviarEmail(clienteEntitySalvo.getEmail(), mensagemCadastradoSucesso, mensagemSaudacoesCliente + clienteEntitySalvo.getNome());
+
+        emailService.enviarEmail(clienteEntitySalvo.getEmail(), mensagemCadastradoSucesso, String.format(mensagemCadastradoSucesso, clienteEntitySalvo.getNome()));
 
         return clienteMapper.entityToDomain(clienteEntitySalvo);
     }
@@ -66,7 +67,7 @@ public class ClienteAdapter implements ClienteOutputPort {
 
     @Override
     public void esqueciMinhaSenha(String email) {
-        emailService.enviarEmail(email, mensagemEsqueciMinhaSenhaAssunto, mensagemEsqueciMinhaSenhaConteudo + codigo);
+        emailService.enviarEmail(email, mensagemEsqueciMinhaSenhaAssunto, String.format(mensagemEsqueciMinhaSenhaConteudo, codigo));
     }
 
     @Override
