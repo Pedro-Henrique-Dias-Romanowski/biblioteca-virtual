@@ -14,7 +14,7 @@ spring:
       name: devuser
       password: devpass
       jwt:
-        secret: ${JWT_SECRET:12345678}
+        secret: ${JWT_SECRET}
   mail:
     host: ${MAIL_HOST}
     port: ${MAIL_PORT}

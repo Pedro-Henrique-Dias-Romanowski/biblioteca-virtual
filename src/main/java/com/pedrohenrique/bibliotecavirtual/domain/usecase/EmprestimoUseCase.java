@@ -6,7 +6,6 @@ import com.pedrohenrique.bibliotecavirtual.domain.port.output.EmprestimoOutputPo
 import com.pedrohenrique.bibliotecavirtual.domain.usecase.validate.EmprestimoValidate;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
@@ -26,12 +25,13 @@ public class EmprestimoUseCase {
         this.emprestimoOutputPort = emprestimoOutputPort;
     }
 
+
     public Emprestimo realizarEmprestimo(Emprestimo emprestimo) {
         try{
             emprestimo.setDataEmprestimo(LocalDate.now());
             emprestimo.setAtivo(true);
             emprestimoValidate.validarEmprestimo(emprestimo);
-            logger.info("O emprestimo foi confirmado com sucesso: ID: {}", emprestimo.getId());
+            logger.info("Inciando processo de empréstimo");
             return emprestimoOutputPort.realizarEmprestimo(emprestimo);
         } catch (BusinessException e){
             logger.error("Erro ao realizar emprestimo: {}", e.getMessage());

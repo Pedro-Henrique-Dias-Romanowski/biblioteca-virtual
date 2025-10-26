@@ -28,7 +28,7 @@ public class TokenService {
             return decodedJWT.getSubject();
         } catch(JWTVerificationException e){
             // todo lancar uma exceção correta, fazer isso depois que criar a exception handler a a exceção personalizada
-            throw new RuntimeException("Token JWT inválido ou expirado", e);
+            throw new RuntimeException("Token JWT invalido ou expirado", e);
         }
     }
 }

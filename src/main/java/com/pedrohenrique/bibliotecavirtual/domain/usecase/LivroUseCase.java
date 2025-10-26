@@ -9,6 +9,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 import java.util.Optional;
@@ -27,11 +28,12 @@ public class LivroUseCase {
         this.livroValidate = livroValidate;
     }
 
+
     public Livro cadastrarLivro(Livro livro) {
         try{
             livro.setDisponivel(true);
             livroValidate.validarCadastroLivro(livro);
-            logger.info("Livro do id {} cadastrado com sucesso", livro.getId());
+            logger.info("Inciando processo de cadastro de livro");
             return livroOutputPort.cadastrarLivro(livro);
         } catch (BusinessException e){
             logger.error("Erro ao cadastrar livro: {}", e.getMessage());
@@ -48,6 +50,7 @@ public class LivroUseCase {
         logger.info("Buscando livro do ID {}", idLivro);
         return livroOutputPort.buscarLivroPorId(idLivro);
     }
+
 
     public void removerLivro(Long idLivro) {
         try{

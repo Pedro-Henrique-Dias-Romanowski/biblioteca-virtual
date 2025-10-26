@@ -34,18 +34,20 @@ public class ClienteUseCase {
         try{
             clienteValidate.validarCadastroCliente(cliente);
             cliente.setPerfil(Perfil.CLIENTE);
-            logger.info("Cliente cadastrado com sucesso " +  cliente.getId());
+            logger.info("Iniciando processo de cadastro de cliente");
             return clienteOutputPort.cadastrarCliente(cliente);
         } catch (BusinessException e){
-            logger.error("Erro ao cadastrar cliente: " + e.getMessage());
+            logger.error("Erro ao cadastrar cliente: {}", e.getMessage());
             throw new BusinessException(e.getMessage());
         }
     }
+
 
     public Emprestimo realizarEmprestimo(Emprestimo emprestimo) {
         logger.info("Cliente do id {} realizando emprestimo", emprestimo.getClienteId());
         return emprestimoUseCase.realizarEmprestimo(emprestimo);
     }
+
 
     public List<Emprestimo> visualizarTodosOsEmprestimos(Long idCliente){
         logger.info("Cliente realizando busca de seus emprestimos");

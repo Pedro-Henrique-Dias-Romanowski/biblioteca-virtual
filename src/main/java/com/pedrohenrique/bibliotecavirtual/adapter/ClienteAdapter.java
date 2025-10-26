@@ -8,6 +8,8 @@ import com.pedrohenrique.bibliotecavirtual.adapter.service.EmailService;
 import com.pedrohenrique.bibliotecavirtual.domain.entity.Cliente;
 import com.pedrohenrique.bibliotecavirtual.domain.port.output.ClienteOutputPort;
 import org.apache.commons.lang3.RandomUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Component;
@@ -21,6 +23,7 @@ public class ClienteAdapter implements ClienteOutputPort {
     private final PasswordEncoder passwordEncoder;
     private final EmailService emailService;
     private final String codigo = String.format("%04d", RandomUtils.nextInt(1, 10000));
+    private final Logger logger = LoggerFactory.getLogger(ClienteAdapter.class);
 
     @Value("${mensagem.cliente.cadastrado.sucesso}")
     private String mensagemCadastradoSucesso;
@@ -49,18 +52,19 @@ public class ClienteAdapter implements ClienteOutputPort {
         var senhaCliente = clienteEntity.getSenha();
         clienteEntity.setSenha(passwordEncoder.encode(senhaCliente));
         var clienteEntitySalvo = clienteRepository.save(clienteEntity);
-
         emailService.enviarEmail(clienteEntitySalvo.getEmail(), mensagemCadastradoSucesso, String.format(mensagemCadastradoSucesso, clienteEntitySalvo.getNome()));
-
+        logger.info("Cliente cadastrado com sucesso {}", cliente.getId());
         return clienteMapper.entityToDomain(clienteEntitySalvo);
     }
 
     @Override
+    @Transactional(readOnly = true)
     public boolean existsByEmail(Cliente cliente) {
         return clienteRepository.existsByEmailIgnoreCase(cliente.getEmail());
     }
 
     @Override
+    @Transactional(readOnly = true)
     public boolean existsById(Long id) {
         return clienteRepository.existsById(id);
     }
@@ -71,6 +75,7 @@ public class ClienteAdapter implements ClienteOutputPort {
     }
 
     @Override
+    @Transactional
     public void alterarSenha(Integer codigo, String novaSenha, String confirmacaoNovaSenha, String email) {
         if (clienteRepository.existsByEmailIgnoreCase(email) && email != null){
             if (this.codigo.equals(String.format("%04d", codigo))){

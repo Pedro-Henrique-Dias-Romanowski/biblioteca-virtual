@@ -41,7 +41,7 @@ public class UsuarioAutenticacaoService implements UserDetailsService {
                 .map(user -> (UserDetails) user)
                 .or(() -> administradorRepository.findByEmailIgnoreCase(username)
                         .map(user -> (UserDetails) user))
-                .orElseThrow(() -> new UsernameNotFoundException("Usuário não encontrado"));
+                .orElseThrow(() -> new UsernameNotFoundException("Usuario nao encontrado"));
     }
 
     public String gerarTokenCliente(ClienteEntity cliente){
@@ -70,7 +70,7 @@ public class UsuarioAutenticacaoService implements UserDetailsService {
         }
     }
 
-    public Instant dataExpiracaoToken(){
+    private Instant dataExpiracaoToken(){
         return LocalDateTime.now().plusMinutes(30).toInstant(ZoneOffset.of("-03:00"));
     }
 }
