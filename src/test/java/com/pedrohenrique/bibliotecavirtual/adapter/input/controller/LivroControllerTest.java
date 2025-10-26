@@ -1,40 +1,66 @@
 package com.pedrohenrique.bibliotecavirtual.adapter.input.controller;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.pedrohenrique.bibliotecavirtual.adapter.input.controller.exceptions.GlobalExceptionHandler;
 import com.pedrohenrique.bibliotecavirtual.adapter.input.dto.request.LivroRequestDTO;
 import com.pedrohenrique.bibliotecavirtual.adapter.input.dto.response.LivroResponseDTO;
 import com.pedrohenrique.bibliotecavirtual.adapter.input.mappers.LivroMapper;
+import com.pedrohenrique.bibliotecavirtual.adapter.output.repository.AdministradorRepository;
+import com.pedrohenrique.bibliotecavirtual.adapter.output.repository.ClienteRepository;
+import com.pedrohenrique.bibliotecavirtual.adapter.service.TokenService;
 import com.pedrohenrique.bibliotecavirtual.domain.entity.Livro;
 import com.pedrohenrique.bibliotecavirtual.domain.exceptions.BusinessException;
-import com.pedrohenrique.bibliotecavirtual.domain.exceptions.DataBaseException;
 import com.pedrohenrique.bibliotecavirtual.domain.usecase.LivroUseCase;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.InjectMocks;
-import org.mockito.Mock;
-import org.mockito.junit.jupiter.MockitoExtension;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
+import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
+import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.context.annotation.Import;
+import org.springframework.http.MediaType;
+import org.springframework.security.test.context.support.WithMockUser;
+import org.springframework.test.web.servlet.MockMvc;
 
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
+import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.csrf;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
-@ExtendWith(MockitoExtension.class)
+
+@WebMvcTest(LivroController.class)
+@AutoConfigureMockMvc(addFilters = false)
+@Import(GlobalExceptionHandler.class)
 class LivroControllerTest {
 
-    @Mock
+    @Autowired
+    private MockMvc mockMvc;
+
+    @Autowired
+    private ObjectMapper objectMapper;
+
+    @MockBean
     private LivroMapper livroMapper;
 
-    @Mock
+    @MockBean
     private LivroUseCase livroUseCase;
 
-    @InjectMocks
-    private LivroController livroController;
+    @MockBean
+    private TokenService tokenService;
+
+    @MockBean
+    ClienteRepository clienteRepository;
+
+    @MockBean
+    AdministradorRepository administradorRepository;
 
     private LivroRequestDTO livroRequestDTO;
     private Livro livroMock;
@@ -45,11 +71,12 @@ class LivroControllerTest {
     @BeforeEach
     void setUp() {
         livroRequestDTO = new LivroRequestDTO("Dom Casmurro", "Machado de Assis", "Romance brasileiro clássico", 2000, true);
+
         livroMock = new Livro();
         livroMock.setId(1L);
         livroMock.setTitulo("Dom Casmurro");
         livroMock.setAutor("Machado de Assis");
-        livroMock.setEditora("Editora XYZ");
+        livroMock.setEditora("Romance brasileiro clássico");
         livroMock.setAnoPublicacao(2000);
         livroMock.setDisponivel(true);
 
@@ -59,7 +86,7 @@ class LivroControllerTest {
         livroMock2.setId(2L);
         livroMock2.setTitulo("Memórias Póstumas de Brás Cubas");
         livroMock2.setAutor("Machado de Assis");
-        livroMock2.setEditora("Editora ABC");
+        livroMock2.setEditora("Outro romance brasileiro clássico");
         livroMock2.setAnoPublicacao(2000);
         livroMock2.setDisponivel(true);
 
@@ -70,135 +97,282 @@ class LivroControllerTest {
     }
 
     @Test
+    @WithMockUser(roles = "ADMIN")
     @DisplayName("Deve cadastrar um livro com sucesso")
-    void deveCadastrarLivroComSucesso() throws DataBaseException {
-        when(livroMapper.toDomain(livroRequestDTO)).thenReturn(livroMock);
-        when(livroUseCase.cadastrarLivro(livroMock)).thenReturn(livroMock);
-        when(livroMapper.toResponse(livroMock)).thenReturn(livroResponseDTO);
+    void deveCadastrarLivroComSucesso() throws Exception {
+        when(livroMapper.toDomain(any(LivroRequestDTO.class))).thenReturn(livroMock);
+        when(livroUseCase.cadastrarLivro(any(Livro.class))).thenReturn(livroMock);
+        when(livroMapper.toResponse(any(Livro.class))).thenReturn(livroResponseDTO);
 
-        ResponseEntity<LivroResponseDTO> response = livroController.cadastrarLivro(livroRequestDTO);
+        mockMvc.perform(post("/cadastrar/livros")
+                        .with(csrf())
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(livroRequestDTO)))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.id").value(1L))
+                .andExpect(jsonPath("$.titulo").value("Dom Casmurro"))
+                .andExpect(jsonPath("$.autor").value("Machado de Assis"))
+                .andExpect(jsonPath("$.disponivel").value(true));
 
-        assertNotNull(response);
-        assertEquals(HttpStatus.OK, response.getStatusCode());
-        assertEquals(livroResponseDTO, response.getBody());
-        verify(livroUseCase, times(1)).cadastrarLivro(livroMock);
+        verify(livroUseCase, times(1)).cadastrarLivro(any(Livro.class));
+        verify(livroMapper, times(1)).toResponse(any(Livro.class));
     }
 
     @Test
+    @WithMockUser(roles = "ADMIN")
     @DisplayName("Deve lançar exceção ao cadastrar livro com dados inválidos")
-    void deveLancarExcecaoAoCadastrarLivroComDadosInvalidos() throws BusinessException {
-        when(livroMapper.toDomain(livroRequestDTO)).thenReturn(livroMock);
-        when(livroUseCase.cadastrarLivro(livroMock)).thenThrow(new BusinessException("Erro ao cadastrar livro"));
+    void deveLancarExcecaoAoCadastrarLivroComDadosInvalidos() throws Exception {
+        when(livroMapper.toDomain(any(LivroRequestDTO.class))).thenReturn(livroMock);
+        when(livroUseCase.cadastrarLivro(any(Livro.class)))
+                .thenThrow(new BusinessException("Erro ao cadastrar livro"));
 
-        assertThrows(BusinessException.class, () -> {
-            livroController.cadastrarLivro(livroRequestDTO);
-        });
+        mockMvc.perform(post("/cadastrar/livros")
+                        .with(csrf())
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(livroRequestDTO)))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.message").value("Erro ao cadastrar livro"));
 
-        verify(livroUseCase, times(1)).cadastrarLivro(livroMock);
+        verify(livroUseCase, times(1)).cadastrarLivro(any(Livro.class));
+    }
+
+    @Test
+    @WithMockUser(roles = "ADMIN")
+    @DisplayName("Deve lançar exceção ao cadastrar livro com título duplicado")
+    void deveLancarExcecaoAoCadastrarLivroComTituloDuplicado() throws Exception {
+        when(livroMapper.toDomain(any(LivroRequestDTO.class))).thenReturn(livroMock);
+        when(livroUseCase.cadastrarLivro(any(Livro.class)))
+                .thenThrow(new BusinessException("Livro com este título já existe"));
+
+        mockMvc.perform(post("/cadastrar/livros")
+                        .with(csrf())
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(livroRequestDTO)))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.message").value("Livro com este título já existe"));
+
+        verify(livroUseCase, times(1)).cadastrarLivro(any(Livro.class));
     }
 
     @Test
     @DisplayName("Deve retornar todos os livros cadastrados")
-    void deveRetornarTodosOsLivrosCadastrados() {
+    void deveRetornarTodosOsLivrosCadastrados() throws Exception {
         when(livroUseCase.visualizarTodosOsLivros()).thenReturn(livrosMock);
         when(livroMapper.toResponse(livrosMock.get(0))).thenReturn(livrosResponseDTO.get(0));
         when(livroMapper.toResponse(livrosMock.get(1))).thenReturn(livrosResponseDTO.get(1));
 
-        ResponseEntity<List<LivroResponseDTO>> response = livroController.visualizarTodosOsLivros();
+        mockMvc.perform(get("/livros")
+                        .with(csrf()))
+                .andExpect(status().isOk());
 
-        assertNotNull(response);
-        assertEquals(HttpStatus.OK, response.getStatusCode());
-        assertNotNull(response.getBody());
-        assertEquals(livrosResponseDTO.size(), response.getBody().size());
-        assertEquals(livrosResponseDTO.get(0).titulo(), response.getBody().get(0).titulo());
-        assertEquals(livrosResponseDTO.get(1).titulo(), response.getBody().get(1).titulo());
         verify(livroUseCase, times(1)).visualizarTodosOsLivros();
+        verify(livroMapper, times(2)).toResponse(any(Livro.class));
     }
 
     @Test
     @DisplayName("Deve retornar lista vazia quando não houver livros cadastrados")
-    void deveRetornarListaVaziaQuandoNaoHouverLivrosCadastrados() {
-        when(livroUseCase.visualizarTodosOsLivros()).thenReturn(List.of());
+    void deveRetornarListaVaziaQuandoNaoHouverLivrosCadastrados() throws Exception {
+        when(livroUseCase.visualizarTodosOsLivros()).thenReturn(Collections.emptyList());
 
-        ResponseEntity<List<LivroResponseDTO>> response = livroController.visualizarTodosOsLivros();
+        mockMvc.perform(get("/livros")
+                        .with(csrf()))
+                .andExpect(status().isOk());
 
-        assertNotNull(response);
-        assertEquals(HttpStatus.OK, response.getStatusCode());
-        assertNotNull(response.getBody());
-        assertTrue(response.getBody().isEmpty());
         verify(livroUseCase, times(1)).visualizarTodosOsLivros();
+        verify(livroMapper, never()).toResponse(any(Livro.class));
     }
 
     @Test
     @DisplayName("Deve retornar livro quando buscar por ID existente")
-    void deveRetornarLivroQuandoBuscarPorIdExistente() {
+    void deveRetornarLivroQuandoBuscarPorIdExistente() throws Exception {
         Long idLivro = 1L;
         when(livroUseCase.buscarLivroPorId(idLivro)).thenReturn(Optional.of(livroMock));
-        when(livroMapper.toResponse(livroMock)).thenReturn(livroResponseDTO);
+        when(livroMapper.toResponse(any(Livro.class))).thenReturn(livroResponseDTO);
 
-        ResponseEntity<Optional<LivroResponseDTO>> response = livroController.buscarLivroPorId(idLivro);
+        mockMvc.perform(get("/livros/{idLivro}", idLivro)
+                        .with(csrf()))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.id").value(1L))
+                .andExpect(jsonPath("$.titulo").value("Dom Casmurro"))
+                .andExpect(jsonPath("$.autor").value("Machado de Assis"));
 
-        assertNotNull(response);
-        assertEquals(HttpStatus.OK, response.getStatusCode());
-        assertNotNull(response.getBody());
-        assertTrue(response.getBody().isPresent());
-        assertEquals(livroResponseDTO.id(), response.getBody().get().id());
-        assertEquals(livroResponseDTO.titulo(), response.getBody().get().titulo());
         verify(livroUseCase, times(1)).buscarLivroPorId(idLivro);
+        verify(livroMapper, times(1)).toResponse(any(Livro.class));
     }
 
     @Test
     @DisplayName("Deve retornar no content quando buscar por ID inexistente")
-    void deveRetornarNoContentQuandoBuscarPorIdInexistente() {
+    void deveRetornarNoContentQuandoBuscarPorIdInexistente() throws Exception {
         Long idLivro = 999L;
         when(livroUseCase.buscarLivroPorId(idLivro)).thenReturn(Optional.empty());
 
-        ResponseEntity<Optional<LivroResponseDTO>> response = livroController.buscarLivroPorId(idLivro);
+        mockMvc.perform(get("/livros/{idLivro}", idLivro)
+                        .with(csrf()))
+                .andExpect(status().isNoContent());
 
-        assertNotNull(response);
-        assertEquals(HttpStatus.NO_CONTENT, response.getStatusCode());
-        assertNull(response.getBody());
         verify(livroUseCase, times(1)).buscarLivroPorId(idLivro);
+        verify(livroMapper, never()).toResponse(any(Livro.class));
     }
 
     @Test
+    @WithMockUser(roles = "ADMIN")
     @DisplayName("Deve remover livro com sucesso")
-    void deveRemoverLivroComSucesso() throws Exception, BusinessException {
+    void deveRemoverLivroComSucesso() throws Exception {
         Long idLivro = 1L;
         doNothing().when(livroUseCase).removerLivro(idLivro);
 
-        ResponseEntity<Void> response = livroController.removerLivro(idLivro);
+        mockMvc.perform(delete("/livros/{idLivro}", idLivro)
+                        .with(csrf()))
+                .andExpect(status().isNoContent());
 
-        assertNotNull(response);
-        assertEquals(HttpStatus.NO_CONTENT, response.getStatusCode());
         verify(livroUseCase, times(1)).removerLivro(idLivro);
     }
 
     @Test
+    @WithMockUser(roles = "ADMIN")
     @DisplayName("Deve lançar exceção ao tentar remover livro com empréstimo ativo")
-    void deveLancarExcecaoAoRemoverLivroComEmprestimoAtivo() throws Exception, BusinessException {
+    void deveLancarExcecaoAoRemoverLivroComEmprestimoAtivo() throws Exception {
         Long idLivro = 1L;
         doThrow(new BusinessException("Não é possível remover livro com empréstimo ativo"))
                 .when(livroUseCase).removerLivro(idLivro);
 
-        assertThrows(BusinessException.class, () -> {
-            livroController.removerLivro(idLivro);
-        });
+        mockMvc.perform(delete("/livros/{idLivro}", idLivro)
+                        .with(csrf()))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.message").value("Não é possível remover livro com empréstimo ativo"));
 
         verify(livroUseCase, times(1)).removerLivro(idLivro);
     }
 
     @Test
+    @WithMockUser(roles = "ADMIN")
     @DisplayName("Deve lançar exceção ao tentar remover livro inexistente")
-    void deveLancarExcecaoAoRemoverLivroInexistente() throws Exception, BusinessException {
+    void deveLancarExcecaoAoRemoverLivroInexistente() throws Exception {
         Long idLivro = 999L;
         doThrow(new BusinessException("Livro não encontrado"))
                 .when(livroUseCase).removerLivro(idLivro);
 
-        assertThrows(BusinessException.class, () -> {
-            livroController.removerLivro(idLivro);
-        });
+        mockMvc.perform(delete("/livros/{idLivro}", idLivro)
+                        .with(csrf()))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.message").value("Livro não encontrado"));
 
         verify(livroUseCase, times(1)).removerLivro(idLivro);
     }
+
+    @Test
+    @WithMockUser(roles = "ADMIN")
+    @DisplayName("Deve validar que apenas administradores podem cadastrar livros")
+    void deveValidarQueApenasAdministradoresPodemCadastrarLivros() throws Exception {
+        when(livroMapper.toDomain(any(LivroRequestDTO.class))).thenReturn(livroMock);
+        when(livroUseCase.cadastrarLivro(any(Livro.class))).thenReturn(livroMock);
+        when(livroMapper.toResponse(any(Livro.class))).thenReturn(livroResponseDTO);
+
+        mockMvc.perform(post("/cadastrar/livros")
+                        .with(csrf())
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(livroRequestDTO)))
+                .andExpect(status().isOk());
+
+        verify(livroUseCase, times(1)).cadastrarLivro(any(Livro.class));
+    }
+
+    @Test
+    @WithMockUser(roles = "ADMIN")
+    @DisplayName("Deve validar que apenas administradores podem remover livros")
+    void deveValidarQueApenasAdministradoresPodemRemoverLivros() throws Exception {
+        Long idLivro = 1L;
+        doNothing().when(livroUseCase).removerLivro(idLivro);
+
+        mockMvc.perform(delete("/livros/{idLivro}", idLivro)
+                        .with(csrf()))
+                .andExpect(status().isNoContent());
+
+        verify(livroUseCase, times(1)).removerLivro(idLivro);
+    }
+
+    @Test
+    @DisplayName("Deve permitir que qualquer usuário visualize livros")
+    void devePermitirQueQualquerUsuarioVisualizeLivros() throws Exception {
+        when(livroUseCase.visualizarTodosOsLivros()).thenReturn(livrosMock);
+        when(livroMapper.toResponse(any(Livro.class))).thenReturn(livroResponseDTO);
+
+        mockMvc.perform(get("/livros")
+                        .with(csrf()))
+                .andExpect(status().isOk());
+
+        verify(livroUseCase, times(1)).visualizarTodosOsLivros();
+    }
+
+    @Test
+    @DisplayName("Deve permitir que qualquer usuário busque livro por ID")
+    void devePermitirQueQualquerUsuarioBusqueLivroPorId() throws Exception {
+        Long idLivro = 1L;
+        when(livroUseCase.buscarLivroPorId(idLivro)).thenReturn(Optional.of(livroMock));
+        when(livroMapper.toResponse(any(Livro.class))).thenReturn(livroResponseDTO);
+
+        mockMvc.perform(get("/livros/{idLivro}", idLivro)
+                        .with(csrf()))
+                .andExpect(status().isOk());
+
+        verify(livroUseCase, times(1)).buscarLivroPorId(idLivro);
+    }
+
+    @Test
+    @WithMockUser(roles = "ADMIN")
+    @DisplayName("Deve testar serialização completa do livro")
+    void deveTestarSerializacaoCompletaDoLivro() throws Exception {
+        when(livroMapper.toDomain(any(LivroRequestDTO.class))).thenReturn(livroMock);
+        when(livroUseCase.cadastrarLivro(any(Livro.class))).thenReturn(livroMock);
+        when(livroMapper.toResponse(any(Livro.class))).thenReturn(livroResponseDTO);
+
+        mockMvc.perform(post("/cadastrar/livros")
+                        .with(csrf())
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(livroRequestDTO)))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.id").exists())
+                .andExpect(jsonPath("$.titulo").exists())
+                .andExpect(jsonPath("$.autor").exists())
+                .andExpect(jsonPath("$.editora").exists())
+                .andExpect(jsonPath("$.anoPublicacao").exists())
+                .andExpect(jsonPath("$.disponivel").exists());
+
+        verify(livroUseCase, times(1)).cadastrarLivro(any(Livro.class));
+    }
+
+    @Test
+    @WithMockUser(roles = "ADMIN")
+    @DisplayName("Deve verificar que livro cadastrado está disponível por padrão")
+    void deveVerificarQueLivroCadastradoEstaDisponivelPorPadrao() throws Exception {
+        when(livroMapper.toDomain(any(LivroRequestDTO.class))).thenReturn(livroMock);
+        when(livroUseCase.cadastrarLivro(any(Livro.class))).thenReturn(livroMock);
+        when(livroMapper.toResponse(any(Livro.class))).thenReturn(livroResponseDTO);
+
+        mockMvc.perform(post("/cadastrar/livros")
+                        .with(csrf())
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(livroRequestDTO)))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.disponivel").value(true));
+
+        verify(livroUseCase, times(1)).cadastrarLivro(any(Livro.class));
+    }
+
+    @Test
+    @DisplayName("Deve validar que endpoint de buscar todos os livros retorna lista")
+    void deveValidarQueEndpointRetornaLista() throws Exception {
+        when(livroUseCase.visualizarTodosOsLivros()).thenReturn(livrosMock);
+        when(livroMapper.toResponse(any(Livro.class)))
+                .thenReturn(livrosResponseDTO.get(0))
+                .thenReturn(livrosResponseDTO.get(1));
+
+        mockMvc.perform(get("/livros")
+                        .with(csrf()))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$").isArray());
+
+        verify(livroUseCase, times(1)).visualizarTodosOsLivros();
+    }
 }
+

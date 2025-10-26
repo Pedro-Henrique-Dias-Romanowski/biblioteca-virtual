@@ -10,6 +10,7 @@ import com.pedrohenrique.bibliotecavirtual.adapter.service.UsuarioAutenticacaoSe
 import com.pedrohenrique.bibliotecavirtual.domain.exceptions.BusinessException;
 import com.pedrohenrique.bibliotecavirtual.domain.exceptions.DataBaseException;
 import com.pedrohenrique.bibliotecavirtual.domain.usecase.ClienteUseCase;
+import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -82,6 +83,14 @@ public class ClienteController implements ClienteControllerSwagger {
         var emprestimoCadastrado = clienteUseCase.realizarEmprestimo(emprestimo);
 
         return ResponseEntity.ok().body(emprestimoMapper.toResponse(emprestimoCadastrado));
+    }
+
+    @Override
+    @PreAuthorize("hasRole('CLIENTE') and #devolucaoEmprestimoRequestDTO.idCliente() == authentication.principal.id")
+    public ResponseEntity<EmprestimoResponseDTO> realizarDevolucaoEmprestimo(@Valid DevolucaoEmprestimoRequestDTO devolucaoEmprestimoRequestDTO) throws Exception, BusinessException {
+        var emprestimo = emprestimoMapper.devolucaoEmprestimoMapperToDomain(devolucaoEmprestimoRequestDTO);
+        var devolucaoEmprestimo = clienteUseCase.realizarDevolucaoEmprestimo(emprestimo);
+        return ResponseEntity.ok().body(emprestimoMapper.toResponse(devolucaoEmprestimo));
     }
 
     @Override

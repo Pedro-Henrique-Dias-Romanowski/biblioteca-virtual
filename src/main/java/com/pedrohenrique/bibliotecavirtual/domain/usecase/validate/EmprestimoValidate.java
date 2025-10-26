@@ -3,11 +3,13 @@ package com.pedrohenrique.bibliotecavirtual.domain.usecase.validate;
 import com.pedrohenrique.bibliotecavirtual.domain.entity.Emprestimo;
 import com.pedrohenrique.bibliotecavirtual.domain.exceptions.cliente.ClienteInvalidoException;
 import com.pedrohenrique.bibliotecavirtual.domain.exceptions.emprestimo.DataEmprestimoInvalidoException;
+import com.pedrohenrique.bibliotecavirtual.domain.exceptions.emprestimo.EmprestimoInexistenteException;
 import com.pedrohenrique.bibliotecavirtual.domain.exceptions.emprestimo.EmprestimoNuloException;
 import com.pedrohenrique.bibliotecavirtual.domain.exceptions.livro.LivroInvalidoException;
 import com.pedrohenrique.bibliotecavirtual.domain.exceptions.livro.LivroNaoEcontradoException;
 import com.pedrohenrique.bibliotecavirtual.domain.exceptions.livro.QuantidadeMaximaLivrosEmprestimoException;
 import com.pedrohenrique.bibliotecavirtual.domain.port.output.ClienteOutputPort;
+import com.pedrohenrique.bibliotecavirtual.domain.port.output.EmprestimoOutputPort;
 import com.pedrohenrique.bibliotecavirtual.domain.port.output.LivroOutputPort;
 import com.pedrohenrique.bibliotecavirtual.domain.utils.Constantes;
 import org.springframework.beans.factory.annotation.Value;
@@ -19,6 +21,8 @@ public class EmprestimoValidate {
     private final LivroOutputPort livroOutputPort;
 
     private final ClienteOutputPort clienteOutputPort;
+
+    private final EmprestimoOutputPort emprestimoOutputPort;
 
     @Value(value = "${mensagem.erro.emprestimo.nulo}")
     private String mensagemErroEmprestimoNulo;
@@ -38,9 +42,13 @@ public class EmprestimoValidate {
     @Value("${mensagem.erro.livro.indisponivel}")
     private String mensagemErroLivroIndisponivel;
 
-    public EmprestimoValidate(LivroOutputPort livroOutputPort,ClienteOutputPort clienteOutputPort) {
+    @Value("${mensagem.erro.emprestimo.inexistente")
+    private String mensagemErroEmprestimoInexistente;
+
+    public EmprestimoValidate(LivroOutputPort livroOutputPort, ClienteOutputPort clienteOutputPort, EmprestimoOutputPort emprestimoOutputPort, EmprestimoOutputPort emprestimoOutputPort1) {
         this.livroOutputPort = livroOutputPort;
         this.clienteOutputPort = clienteOutputPort;
+        this.emprestimoOutputPort = emprestimoOutputPort1;
     }
 
     public void validarEmprestimo(Emprestimo emprestimo){
@@ -50,6 +58,13 @@ public class EmprestimoValidate {
         validarNulidadeIdCliente(emprestimo);
         validarExistenciaIdCliente(emprestimo);
         validarQuantidadesLivrosEmprestimo(emprestimo);
+    }
+
+    public void validarDevolucao(Emprestimo emprestimo){
+        validarNulidadeEmprestimo(emprestimo);
+        validarExistenciaEmprestimo(emprestimo);
+        validarNulidadeIdCliente(emprestimo);
+        validarExistenciaIdCliente(emprestimo);
     }
 
     private void validarNulidadeEmprestimo(Emprestimo emprestimo){
@@ -77,6 +92,12 @@ public class EmprestimoValidate {
     private void validarExistenciaIdCliente(Emprestimo emprestimo){
         if (!clienteOutputPort.existsById(emprestimo.getClienteId()))
             throw new ClienteInvalidoException(mensagemErroDadosClienteIdNaoEncontrado);
+    }
+
+    private void validarExistenciaEmprestimo(Emprestimo emprestimo){
+        if (!emprestimoOutputPort.existsById(emprestimo.getId())){
+            throw new EmprestimoInexistenteException(mensagemErroEmprestimoInexistente);
+        }
     }
 
     private void validarLivros(Emprestimo emprestimo){

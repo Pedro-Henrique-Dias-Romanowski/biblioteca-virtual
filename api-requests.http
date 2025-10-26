@@ -1,0 +1,300 @@
+### Biblioteca Virtual - API Requests
+### Baseado no projeto com Spring Boot + JWT
+
+### ============================================
+### VARIÁVEIS DE AMBIENTE
+### ============================================
+@baseUrl = http://localhost:8080
+@contentType = application/json
+
+### Tokens serão armazenados após login
+# @tokenCliente = seu-token-jwt-aqui
+# @tokenAdmin = seu-token-jwt-aqui
+
+### ============================================
+### 1. ADMINISTRADOR
+### ============================================
+
+### 1.1 Login Administrador
+POST {{baseUrl}}/administradores/login
+Content-Type: {{contentType}}
+
+{
+  "email": "admin@biblioteca.com",
+  "senha": "admin123"
+}
+
+> {%
+    client.global.set("tokenAdmin", response.body.token);
+    client.log("Token Admin: " + response.body.token);
+%}
+
+### ============================================
+### 2. CLIENTE
+### ============================================
+
+### 2.1 Cadastrar Cliente
+POST {{baseUrl}}/clientes/cadastrar
+Content-Type: {{contentType}}
+
+{
+  "nome": "João Silva",
+  "email": "joao.silva@email.com",
+  "senha": "senha123",
+  "qtLivrosEmprestados": 0
+}
+
+### 2.2 Login Cliente
+POST {{baseUrl}}/clientes/login
+Content-Type: {{contentType}}
+
+{
+  "email": "pedro.romanowski@pucpr.edu.br",
+  "senha": "908070"
+}
+
+> {%
+    client.global.set("tokenCliente", response.body.token);
+    client.global.set("clienteId", response.body.id);
+    client.log("Token Cliente: " + response.body.token);
+    client.log("Cliente ID: " + response.body.id);
+%}
+
+### 2.3 Esqueci Minha Senha
+POST {{baseUrl}}/clientes/esqueci-minha-senha
+Content-Type: {{contentType}}
+
+{
+  "email": "joao.silva@email.com"
+}
+
+### 2.4 Alterar Senha
+POST {{baseUrl}}/clientes/alterar-senha
+Content-Type: {{contentType}}
+
+{
+  "senhaAtual": "senha123",
+  "codigo": 12345,
+  "novaSenha": "novaSenha123",
+  "confirmacaoNovaSenha": "novaSenha123",
+  "email": "joao.silva@email.com"
+}
+
+### ============================================
+### 3. LIVROS (Público - GET | Admin - POST/DELETE)
+### ============================================
+
+### 3.1 Listar Todos os Livros (Público)
+GET {{baseUrl}}/livros
+
+### 3.2 Buscar Livro por ID (Público)
+GET {{baseUrl}}/livros/1
+
+### 3.3 Cadastrar Livro (ADMIN)
+POST {{baseUrl}}/cadastrar/livros
+Content-Type: {{contentType}}
+Authorization: Bearer {{tokenAdmin}}
+
+{
+  "titulo": "Dom Casmurro",
+  "autor": "Machado de Assis",
+  "editora": "Editora Clássicos",
+  "anoPublicacao": 1899,
+  "disponivel": true
+}
+
+### 3.4 Cadastrar Vários Livros (ADMIN)
+POST {{baseUrl}}/cadastrar/livros
+Content-Type: {{contentType}}
+Authorization: Bearer {{tokenAdmin}}
+
+{
+  "titulo": "1984",
+  "autor": "George Orwell",
+  "editora": "Companhia das Letras",
+  "anoPublicacao": 1949,
+  "disponivel": true
+}
+
+###
+POST {{baseUrl}}/cadastrar/livros
+Content-Type: {{contentType}}
+Authorization: Bearer {{tokenAdmin}}
+
+{
+  "titulo": "O Senhor dos Anéis",
+  "autor": "J.R.R. Tolkien",
+  "editora": "Martins Fontes",
+  "anoPublicacao": 1954,
+  "disponivel": true
+}
+
+### 3.5 Remover Livro (ADMIN)
+DELETE {{baseUrl}}/livros/1
+Authorization: Bearer {{tokenAdmin}}
+
+### ============================================
+### 4. EMPRÉSTIMOS (CLIENTE)
+### ============================================
+
+### 4.1 Realizar Empréstimo (valores fixos)
+# Use esta versão com IDs fixos para testar rapidamente
+POST {{baseUrl}}/clientes/emprestimos
+Content-Type: {{contentType}}
+Authorization: Bearer {{tokenCliente}}
+
+{
+  "clienteId": 1,
+  "livros": [1, 2],
+  "dataDevolucao": "2025-11-02"
+}
+
+### 4.2 Visualizar Todos os Empréstimos do Cliente (valor fixo)
+# Substitua "1" pelo ID do seu cliente
+GET {{baseUrl}}/clientes/emprestimos/1
+Authorization: Bearer {{tokenCliente}}
+
+### 4.2b Visualizar com Variável (após login)
+GET {{baseUrl}}/clientes/emprestimos/{{clienteId}}
+Authorization: Bearer {{tokenCliente}}
+
+### 4.3 Realizar Devolução de Empréstimo
+# IMPORTANTE: Substitua os valores abaixo pelos IDs reais
+# OU execute o login (2.2) primeiro para preencher {{clienteId}} automaticamente
+PATCH {{baseUrl}}/clientes/emprestimos/devolucacao
+Content-Type: {{contentType}}
+Authorization: Bearer {{tokenCliente}}
+
+{
+  "idCliente": 4,
+  "idEmprestimo": 4
+}
+
+### 4.4 Realizar Devolução com Variáveis (após login)
+# Esta versão usa variáveis - certifique-se de ter executado o login (2.2) antes
+PATCH {{baseUrl}}/clientes/emprestimos/devolucacao
+Content-Type: {{contentType}}
+Authorization: Bearer {{tokenCliente}}
+
+{
+  "idCliente": {{clienteId}},
+  "idEmprestimo": 1
+}
+
+### ============================================
+### 5. SWAGGER (Público)
+### ============================================
+
+### 5.1 OpenAPI JSON
+GET {{baseUrl}}/v3/api-docs
+
+### 5.2 OpenAPI YAML
+GET {{baseUrl}}/v3/api-docs.yaml
+
+### ============================================
+### 6. TESTES DE ERRO
+### ============================================
+
+### 6.1 Tentar acessar endpoint protegido sem token (deve retornar 401)
+GET {{baseUrl}}/clientes/emprestimos/1
+
+### 6.2 Tentar cadastrar livro sem ser admin (deve retornar 403)
+POST {{baseUrl}}/cadastrar/livros
+Content-Type: {{contentType}}
+Authorization: Bearer {{tokenCliente}}
+
+{
+  "titulo": "Teste",
+  "autor": "Teste",
+  "editora": "Teste",
+  "anoPublicacao": 2024,
+  "disponivel": true
+}
+
+### 6.3 Login com credenciais inválidas (deve retornar 401)
+POST {{baseUrl}}/clientes/login
+Content-Type: {{contentType}}
+
+{
+  "email": "usuario@invalido.com",
+  "senha": "senhaErrada"
+}
+
+### 6.4 Cadastrar cliente com email duplicado (deve retornar 500 ou 400)
+POST {{baseUrl}}/clientes/cadastrar
+Content-Type: {{contentType}}
+
+{
+  "nome": "João Silva",
+  "email": "joao.silva@email.com",
+  "senha": "senha123",
+  "qtLivrosEmprestados": 0
+}
+
+### ============================================
+### 7. FLUXO COMPLETO DE TESTE
+### ============================================
+
+### 7.1 PASSO 1: Criar conta de cliente
+POST {{baseUrl}}/clientes/cadastrar
+Content-Type: {{contentType}}
+
+{
+  "nome": "Maria Santos",
+  "email": "maria.santos@email.com",
+  "senha": "senha123",
+  "qtLivrosEmprestados": 0
+}
+
+### 7.2 PASSO 2: Fazer login
+POST {{baseUrl}}/clientes/login
+Content-Type: {{contentType}}
+
+{
+  "email": "maria.santos@email.com",
+  "senha": "senha123"
+}
+
+> {%
+    client.global.set("tokenMaria", response.body.token);
+    client.global.set("mariaId", response.body.id);
+%}
+
+### 7.3 PASSO 3: Ver livros disponíveis
+GET {{baseUrl}}/livros
+
+### 7.4 PASSO 4: Fazer empréstimo
+POST {{baseUrl}}/clientes/emprestimos
+Content-Type: {{contentType}}
+Authorization: Bearer {{tokenMaria}}
+
+{
+  "clienteId": {{mariaId}},
+  "livros": [1, 2],
+  "dataDevolucao": "2025-11-02"
+}
+
+> {%
+    client.global.set("emprestimoId", response.body.id);
+%}
+
+### 7.5 PASSO 5: Ver meus empréstimos
+GET {{baseUrl}}/clientes/emprestimos/{{mariaId}}
+Authorization: Bearer {{tokenMaria}}
+
+### 7.6 PASSO 6: Devolver empréstimo
+PATCH {{baseUrl}}/clientes/emprestimos/devolucacao
+Content-Type: {{contentType}}
+Authorization: Bearer {{tokenMaria}}
+
+{
+  "idCliente": {{mariaId}},
+  "idEmprestimo": {{emprestimoId}}
+}
+
+### 7.7 PASSO 7: Confirmar devolução
+GET {{baseUrl}}/clientes/emprestimos/{{mariaId}}
+Authorization: Bearer {{tokenMaria}}
+
+###
+

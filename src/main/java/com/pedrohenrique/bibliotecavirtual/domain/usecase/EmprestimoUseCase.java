@@ -3,9 +3,11 @@ package com.pedrohenrique.bibliotecavirtual.domain.usecase;
 import com.pedrohenrique.bibliotecavirtual.domain.entity.Emprestimo;
 import com.pedrohenrique.bibliotecavirtual.domain.exceptions.BusinessException;
 import com.pedrohenrique.bibliotecavirtual.domain.port.output.EmprestimoOutputPort;
+import com.pedrohenrique.bibliotecavirtual.domain.port.output.LivroOutputPort;
 import com.pedrohenrique.bibliotecavirtual.domain.usecase.validate.EmprestimoValidate;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
@@ -18,11 +20,17 @@ public class EmprestimoUseCase {
 
     private final EmprestimoOutputPort emprestimoOutputPort;
 
+    private final LivroOutputPort livroOutputPort;
+
+    @Value("${mensagem.erro.livro.indisponivel}")
+    private String mensagemErroLivroIndisponivel;
+
     private final Logger logger = LoggerFactory.getLogger(EmprestimoUseCase.class);
 
-    public EmprestimoUseCase(EmprestimoValidate emprestimoValidate, EmprestimoOutputPort emprestimoOutputPort) {
+    public EmprestimoUseCase(EmprestimoValidate emprestimoValidate, EmprestimoOutputPort emprestimoOutputPort, LivroOutputPort livroOutputPort) {
         this.emprestimoValidate = emprestimoValidate;
         this.emprestimoOutputPort = emprestimoOutputPort;
+        this.livroOutputPort = livroOutputPort;
     }
 
 
@@ -31,6 +39,7 @@ public class EmprestimoUseCase {
             emprestimo.setDataEmprestimo(LocalDate.now());
             emprestimo.setAtivo(true);
             emprestimoValidate.validarEmprestimo(emprestimo);
+            atualizarDisponibilidadeDosLivrosAposEmprestimo(emprestimo);
             logger.info("Inciando processo de empréstimo");
             return emprestimoOutputPort.realizarEmprestimo(emprestimo);
         } catch (BusinessException e){
@@ -39,8 +48,37 @@ public class EmprestimoUseCase {
         }
     }
 
+    public Emprestimo realizarDevolucaoEmprestimo(Emprestimo emprestimo){
+        try{
+            emprestimoValidate.validarDevolucao(emprestimo);
+            emprestimo.setAtivo(false);
+            emprestimo.setDataDevolucao(LocalDate.now());
+            atualizarDisponibilidadeDosLivrosAposDevolucao(emprestimo);
+            logger.info("Iniciando processo de devolução de empréstimo");
+            return emprestimoOutputPort.realizarDevolucaoEmprestimo(emprestimo);
+        } catch (BusinessException e){
+            logger.error("Erro ao realizar devolução de empréstimo: {}", e.getMessage());
+            throw new BusinessException(e.getMessage());
+        }
+    }
+
     public List<Emprestimo> visualizarTodosOsEmprestimos(Long idCliente){
         logger.info("Buscando todos os emprestimos");
         return emprestimoOutputPort.visualizarTodosOsEmprestimos(idCliente);
+    }
+
+
+    private void atualizarDisponibilidadeDosLivrosAposEmprestimo(Emprestimo emprestimo){
+        for (Long idLivro : emprestimo.getLivros()){
+            var livro = livroOutputPort.buscarLivroPorId(idLivro);
+            livro.get().setDisponivel(false);
+        }
+    }
+
+    private void atualizarDisponibilidadeDosLivrosAposDevolucao(Emprestimo emprestimo){
+        for (Long idLivro : emprestimo.getLivros()){
+            var livro = livroOutputPort.buscarLivroPorId(idLivro);
+            livro.get().setDisponivel(true);
+        }
     }
 }

@@ -1,5 +1,6 @@
 package com.pedrohenrique.bibliotecavirtual.adapter.input.mappers;
 
+import com.pedrohenrique.bibliotecavirtual.adapter.input.dto.request.DevolucaoEmprestimoRequestDTO;
 import com.pedrohenrique.bibliotecavirtual.adapter.input.dto.request.EmprestimoRequestDTO;
 import com.pedrohenrique.bibliotecavirtual.adapter.input.dto.response.EmprestimoResponseDTO;
 import com.pedrohenrique.bibliotecavirtual.adapter.output.entity.ClienteEntity;
@@ -42,6 +43,20 @@ public class EmprestimoMapper {
         emprestimo.setDataDevolucao(emprestimoRequestDTO.dataDevolucao());
 
         return emprestimo;
+    }
+
+    public Emprestimo devolucaoEmprestimoMapperToDomain(DevolucaoEmprestimoRequestDTO devolucaoEmprestimoRequestDTO){
+        Emprestimo emprestimo = new Emprestimo();
+        emprestimo.setId(emprestimo.getId());
+        emprestimo.setClienteId(devolucaoEmprestimoRequestDTO.idCliente());
+        return emprestimo;
+    }
+
+    public DevolucaoEmprestimoRequestDTO devolucaoEmprestimoMapperToResponse(Emprestimo emprestimo){
+        return new DevolucaoEmprestimoRequestDTO(
+                emprestimo.getId(),
+                emprestimo.getClienteId()
+        );
     }
 
     public EmprestimoResponseDTO toResponse(Emprestimo emprestimo){

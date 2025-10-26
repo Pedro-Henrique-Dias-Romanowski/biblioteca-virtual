@@ -17,6 +17,7 @@ import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 @Component
@@ -33,6 +34,9 @@ public class EmprestimoAdapter implements EmprestimoOutputPort {
 
     @Value("${mensagem.emprestimo.confirmado.sucesso}")
     private String mensagemEmprestimoConfirmadoSucesso;
+
+    @Value("${mensagem.emprestimo.devolucao.email}")
+    private String mensagemEmprestimoDevolucaoEmail;
 
     public EmprestimoAdapter(EmprestimoRepository emprestimoRepository, EmprestimoMapper emprestimoMapper, EmailService emailService, ClienteRepository clienteRepository) {
         this.emprestimoRepository = emprestimoRepository;
@@ -58,6 +62,20 @@ public class EmprestimoAdapter implements EmprestimoOutputPort {
         ClienteEntity clienteEntity = clienteRepository.findById(idCliente).orElse(null);
         return emprestimoRepository.findAllEmprestimosByClienteId(clienteEntity).stream().map(emprestimoMapper::entityToDomain)
                 .toList();
+    }
+
+    @Override
+    public Emprestimo realizarDevolucaoEmprestimo(Emprestimo emprestimo) {
+        var emprestimoEntity = emprestimoMapper.toEntity(emprestimo);
+        emprestimoRepository.save(emprestimoEntity);
+        var mensagemDevolucaoEmail = String.format(mensagemEmprestimoDevolucaoEmail, extrairNomeLivrosEmprestimo(emprestimoEntity));
+        emailService.enviarEmail(emprestimoEntity.getClienteId().getEmail(), "Devolução empréstimo", mensagemDevolucaoEmail );
+        return emprestimoMapper.entityToDomain(emprestimoEntity);
+    }
+
+    @Override
+    public Boolean existsById(Long idEmprestimo) {
+        return emprestimoRepository.existsById(idEmprestimo);
     }
 
     private String extrairNomeLivrosEmprestimo(EmprestimoEntity emprestimoEntity){

@@ -48,6 +48,11 @@ public class ClienteUseCase {
         return emprestimoUseCase.realizarEmprestimo(emprestimo);
     }
 
+    public Emprestimo realizarDevolucaoEmprestimo(Emprestimo emprestimo){
+        logger.info("Cliente do id {} realizando devolucao de emprestimo", emprestimo.getClienteId());
+        return emprestimoUseCase.realizarDevolucaoEmprestimo(emprestimo);
+    }
+
 
     public List<Emprestimo> visualizarTodosOsEmprestimos(Long idCliente){
         logger.info("Cliente realizando busca de seus emprestimos");

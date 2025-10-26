@@ -100,6 +100,7 @@ class ClienteUseCaseTest {
         verify(clienteOutputPort, never()).cadastrarCliente(any(Cliente.class));
     }
 
+
     @Test
     @DisplayName("Deve realizar empréstimo com sucesso")
     void deveRealizarEmprestimoComSucesso() {
@@ -111,6 +112,33 @@ class ClienteUseCaseTest {
         assertEquals(emprestimo.getId(), resultado.getId());
         assertEquals(emprestimo.getClienteId(), resultado.getClienteId());
         verify(emprestimoUseCase, times(1)).realizarEmprestimo(emprestimo);
+    }
+
+    @Test
+    @DisplayName("Deve realizar devolução de empréstimo com sucesso")
+    void deveRealizarDevolucaoDeEmprestimoComSucesso() {
+        when(emprestimoUseCase.realizarDevolucaoEmprestimo(emprestimo)).thenReturn(emprestimo);
+
+        Emprestimo resultado = clienteUseCase.realizarDevolucaoEmprestimo(emprestimo);
+
+        assertNotNull(resultado);
+        assertEquals(emprestimo.getId(), resultado.getId());
+        assertEquals(emprestimo.getClienteId(), resultado.getClienteId());
+        verify(emprestimoUseCase, times(1)).realizarDevolucaoEmprestimo(emprestimo);
+    }
+
+    @Test
+    @DisplayName("Deve lançar exceção ao realizar devolução quando empréstimo não existe")
+    void deveLancarExcecaoAoRealizarDevolucaoQuandoEmprestimoNaoExiste() {
+        when(emprestimoUseCase.realizarDevolucaoEmprestimo(emprestimo))
+                .thenThrow(new BusinessException("Empréstimo não encontrado"));
+
+        BusinessException exception = assertThrows(BusinessException.class, () -> {
+            clienteUseCase.realizarDevolucaoEmprestimo(emprestimo);
+        });
+
+        assertEquals("Empréstimo não encontrado", exception.getMessage());
+        verify(emprestimoUseCase, times(1)).realizarDevolucaoEmprestimo(emprestimo);
     }
 
     @Test
@@ -166,6 +194,20 @@ class ClienteUseCaseTest {
     }
 
     @Test
+    @DisplayName("Deve lançar exceção ao processar esqueci minha senha quando email não existe")
+    void deveLancarExcecaoAoProcessarEsqueciMinhaSenhaQuandoEmailNaoExiste() {
+        String email = "naoexiste@email.com";
+        doThrow(new BusinessException("Email não encontrado")).when(clienteValidate).validarEmailCliente(email);
+
+        BusinessException exception = assertThrows(BusinessException.class, () -> {
+            clienteUseCase.esqueciMinhaSenha(email);
+        });
+
+        assertEquals("Email não encontrado", exception.getMessage());
+        verify(clienteValidate, times(1)).validarEmailCliente(email);
+    }
+
+    @Test
     @DisplayName("Deve alterar senha com sucesso")
     void deveAlterarSenhaComSucesso() {
         Integer codigo = 1234;
@@ -200,5 +242,24 @@ class ClienteUseCaseTest {
         assertEquals("Senhas não conferem", exception.getMessage());
         verify(clienteValidate, times(1)).validarAlteracaoSenha(novaSenha, confirmacaoSenha, email);
         verify(clienteOutputPort, never()).alterarSenha(anyInt(), anyString(), anyString(), anyString());
+    }
+
+    @Test
+    @DisplayName("Deve lançar exceção ao alterar senha quando código é inválido")
+    void deveLancarExcecaoAoAlterarSenhaQuandoCodigoEhInvalido() {
+        Integer codigo = 9999;
+        String novaSenha = "novaSenha123";
+        String confirmacaoSenha = "novaSenha123";
+        String email = "joao@email.com";
+
+        doNothing().when(clienteValidate).validarAlteracaoSenha(novaSenha, confirmacaoSenha, email);
+        doThrow(new BusinessException("Código inválido")).when(clienteOutputPort)
+                .alterarSenha(codigo, novaSenha, confirmacaoSenha, email);
+
+        BusinessException exception = assertThrows(BusinessException.class, () -> {
+            clienteUseCase.alterarSenha(codigo, novaSenha, confirmacaoSenha, email);
+        });
+
+        assertEquals("Código inválido", exception.getMessage());
     }
 }

@@ -18,7 +18,6 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.test.util.ReflectionTestUtils;
 
 import java.time.LocalDate;
-import java.time.LocalDateTime;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
@@ -197,4 +196,192 @@ class EmprestimoAdapterTest {
                 eq("Empréstimo confirmado com sucesso"),
                 eq("Parabéns pelo empréstimo dos seguintes livros: "));
     }
+
+    @Test
+    @DisplayName("Deve realizar devolução de empréstimo com sucesso")
+    void deveRealizarDevolucaoEmprestimoComSucesso() {
+        ReflectionTestUtils.setField(emprestimoAdapter, "mensagemEmprestimoDevolucaoEmail",
+                "Obrigado pela devolução dos seguintes livros: %s");
+
+        emprestimo.setAtivo(false);
+        emprestimoEntity.setAtivo(false);
+
+        when(emprestimoMapper.toEntity(emprestimo)).thenReturn(emprestimoEntity);
+        when(emprestimoRepository.save(emprestimoEntity)).thenReturn(emprestimoEntity);
+        when(emprestimoMapper.entityToDomain(emprestimoEntity)).thenReturn(emprestimo);
+        doNothing().when(emailService).enviarEmail(anyString(), anyString(), anyString());
+
+        Emprestimo resultado = emprestimoAdapter.realizarDevolucaoEmprestimo(emprestimo);
+
+        assertNotNull(resultado);
+        assertEquals(emprestimo.getId(), resultado.getId());
+        verify(emprestimoRepository, times(1)).save(emprestimoEntity);
+        verify(emailService, times(1)).enviarEmail(
+                eq("joao@email.com"),
+                eq("Devolução empréstimo"),
+                contains("Dom Casmurro, Memórias Póstumas de Brás Cubas"));
+    }
+
+    @Test
+    @DisplayName("Deve realizar devolução de empréstimo sem livros")
+    void deveRealizarDevolucaoEmprestimoSemLivros() {
+        ReflectionTestUtils.setField(emprestimoAdapter, "mensagemEmprestimoDevolucaoEmail",
+                "Obrigado pela devolução dos seguintes livros: %s");
+
+        emprestimo.setAtivo(false);
+        emprestimoEntity.setAtivo(false);
+        emprestimoEntity.setLivros(null);
+
+        when(emprestimoMapper.toEntity(emprestimo)).thenReturn(emprestimoEntity);
+        when(emprestimoRepository.save(emprestimoEntity)).thenReturn(emprestimoEntity);
+        when(emprestimoMapper.entityToDomain(emprestimoEntity)).thenReturn(emprestimo);
+        doNothing().when(emailService).enviarEmail(anyString(), anyString(), anyString());
+
+        Emprestimo resultado = emprestimoAdapter.realizarDevolucaoEmprestimo(emprestimo);
+
+        assertNotNull(resultado);
+        verify(emailService, times(1)).enviarEmail(
+                eq("joao@email.com"),
+                eq("Devolução empréstimo"),
+                eq("Obrigado pela devolução dos seguintes livros: "));
+    }
+
+    @Test
+    @DisplayName("Deve verificar se empréstimo existe por ID - retorna true")
+    void deveVerificarSeEmprestimoExistePorIdRetornaTrue() {
+        when(emprestimoRepository.existsById(1L)).thenReturn(true);
+
+        Boolean resultado = emprestimoAdapter.existsById(1L);
+
+        assertTrue(resultado);
+        verify(emprestimoRepository, times(1)).existsById(1L);
+    }
+
+    @Test
+    @DisplayName("Deve verificar se empréstimo existe por ID - retorna false")
+    void deveVerificarSeEmprestimoExistePorIdRetornaFalse() {
+        when(emprestimoRepository.existsById(999L)).thenReturn(false);
+
+        Boolean resultado = emprestimoAdapter.existsById(999L);
+
+        assertFalse(resultado);
+        verify(emprestimoRepository, times(1)).existsById(999L);
+    }
+
+    @Test
+    @DisplayName("Deve extrair corretamente os títulos dos livros concatenados")
+    void deveExtrairCorretamenteTitulosDoLivrosConcatenados() {
+        when(emprestimoMapper.toEntity(emprestimo)).thenReturn(emprestimoEntity);
+        when(emprestimoRepository.save(emprestimoEntity)).thenReturn(emprestimoEntity);
+        when(emprestimoMapper.entityToDomain(emprestimoEntity)).thenReturn(emprestimo);
+        doNothing().when(emailService).enviarEmail(anyString(), anyString(), anyString());
+
+        emprestimoAdapter.realizarEmprestimo(emprestimo);
+
+        verify(emailService).enviarEmail(
+                anyString(),
+                anyString(),
+                eq("Parabéns pelo empréstimo dos seguintes livros: Dom Casmurro, Memórias Póstumas de Brás Cubas"));
+    }
+
+    @Test
+    @DisplayName("Deve visualizar múltiplos empréstimos do cliente")
+    void deveVisualizarMultiplosEmprestimosDoCliente() {
+        EmprestimoEntity emprestimoEntity2 = new EmprestimoEntity();
+        emprestimoEntity2.setId(2L);
+        emprestimoEntity2.setClienteId(clienteEntity);
+
+        Emprestimo emprestimo2 = new Emprestimo();
+        emprestimo2.setId(2L);
+
+        List<EmprestimoEntity> multiplosEmprestimos = Arrays.asList(emprestimoEntity, emprestimoEntity2);
+
+        when(clienteRepository.findById(1L)).thenReturn(Optional.of(clienteEntity));
+        when(emprestimoRepository.findAllEmprestimosByClienteId(clienteEntity)).thenReturn(multiplosEmprestimos);
+        when(emprestimoMapper.entityToDomain(emprestimoEntity)).thenReturn(emprestimo);
+        when(emprestimoMapper.entityToDomain(emprestimoEntity2)).thenReturn(emprestimo2);
+
+        List<Emprestimo> resultados = emprestimoAdapter.visualizarTodosOsEmprestimos(1L);
+
+        assertNotNull(resultados);
+        assertEquals(2, resultados.size());
+        assertEquals(1L, resultados.get(0).getId());
+        assertEquals(2L, resultados.get(1).getId());
+        verify(emprestimoMapper, times(2)).entityToDomain(any(EmprestimoEntity.class));
+    }
+
+    @Test
+    @DisplayName("Deve enviar email com formato correto ao realizar empréstimo")
+    void deveEnviarEmailComFormatoCorretoAoRealizarEmprestimo() {
+        when(emprestimoMapper.toEntity(emprestimo)).thenReturn(emprestimoEntity);
+        when(emprestimoRepository.save(emprestimoEntity)).thenReturn(emprestimoEntity);
+        when(emprestimoMapper.entityToDomain(emprestimoEntity)).thenReturn(emprestimo);
+        doNothing().when(emailService).enviarEmail(anyString(), anyString(), anyString());
+
+        emprestimoAdapter.realizarEmprestimo(emprestimo);
+
+        verify(emailService).enviarEmail(
+                eq("joao@email.com"),
+                eq("Empréstimo confirmado com sucesso"),
+                argThat(mensagem ->
+                    mensagem.contains("Dom Casmurro") &&
+                    mensagem.contains("Memórias Póstumas de Brás Cubas")));
+    }
+
+    @Test
+    @DisplayName("Deve enviar email com formato correto ao realizar devolução")
+    void deveEnviarEmailComFormatoCorretoAoRealizarDevolucao() {
+        ReflectionTestUtils.setField(emprestimoAdapter, "mensagemEmprestimoDevolucaoEmail",
+                "Obrigado pela devolução dos seguintes livros: %s");
+
+        when(emprestimoMapper.toEntity(emprestimo)).thenReturn(emprestimoEntity);
+        when(emprestimoRepository.save(emprestimoEntity)).thenReturn(emprestimoEntity);
+        when(emprestimoMapper.entityToDomain(emprestimoEntity)).thenReturn(emprestimo);
+        doNothing().when(emailService).enviarEmail(anyString(), anyString(), anyString());
+
+        emprestimoAdapter.realizarDevolucaoEmprestimo(emprestimo);
+
+        verify(emailService).enviarEmail(
+                eq("joao@email.com"),
+                eq("Devolução empréstimo"),
+                argThat(mensagem ->
+                    mensagem.contains("Dom Casmurro") &&
+                    mensagem.contains("Memórias Póstumas de Brás Cubas")));
+    }
+
+
+    @Test
+    @DisplayName("Deve lidar com empréstimo com um único livro")
+    void deveLidarComEmprestimoComUmUnicoLivro() {
+        LivroEntity livroUnico = new LivroEntity();
+        livroUnico.setId(1L);
+        livroUnico.setTitulo("1984");
+        emprestimoEntity.setLivros(Collections.singletonList(livroUnico));
+
+        when(emprestimoMapper.toEntity(emprestimo)).thenReturn(emprestimoEntity);
+        when(emprestimoRepository.save(emprestimoEntity)).thenReturn(emprestimoEntity);
+        when(emprestimoMapper.entityToDomain(emprestimoEntity)).thenReturn(emprestimo);
+        doNothing().when(emailService).enviarEmail(anyString(), anyString(), anyString());
+
+        emprestimoAdapter.realizarEmprestimo(emprestimo);
+
+        verify(emailService).enviarEmail(
+                anyString(),
+                anyString(),
+                eq("Parabéns pelo empréstimo dos seguintes livros: 1984"));
+    }
+
+    @Test
+    @DisplayName("Deve retornar lista vazia corretamente quando buscar empréstimos de cliente sem empréstimos")
+    void deveRetornarListaVaziaCorretamenteQuandoBuscarEmprestimosDeClienteSemEmprestimos() {
+        when(clienteRepository.findById(1L)).thenReturn(Optional.of(clienteEntity));
+        when(emprestimoRepository.findAllEmprestimosByClienteId(clienteEntity)).thenReturn(Collections.emptyList());
+
+        List<Emprestimo> resultados = emprestimoAdapter.visualizarTodosOsEmprestimos(1L);
+
+        assertTrue(resultados.isEmpty());
+        assertEquals(0, resultados.size());
+    }
 }
+
+
