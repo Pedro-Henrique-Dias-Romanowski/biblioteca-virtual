@@ -65,8 +65,10 @@ public class EmprestimoAdapter implements EmprestimoOutputPort {
     }
 
     @Override
+    @Transactional
     public Emprestimo realizarDevolucaoEmprestimo(Emprestimo emprestimo) {
-        var emprestimoEntity = emprestimoMapper.toEntity(emprestimo);
+        var emprestimoEntity = emprestimoRepository.getReferenceById(emprestimo.getId());
+        emprestimoEntity = emprestimoMapper.toEntity(emprestimo);
         emprestimoRepository.save(emprestimoEntity);
         var mensagemDevolucaoEmail = String.format(mensagemEmprestimoDevolucaoEmail, extrairNomeLivrosEmprestimo(emprestimoEntity));
         emailService.enviarEmail(emprestimoEntity.getClienteId().getEmail(), "Devolução empréstimo", mensagemDevolucaoEmail );
@@ -77,6 +79,13 @@ public class EmprestimoAdapter implements EmprestimoOutputPort {
     public Boolean existsById(Long idEmprestimo) {
         return emprestimoRepository.existsById(idEmprestimo);
     }
+
+    @Override
+    public Emprestimo getReferenceById(Long idEmprestimo) {
+       var emprestimoEntity = emprestimoRepository.getReferenceById(idEmprestimo);
+         return emprestimoMapper.entityToDomain(emprestimoEntity);
+    }
+
 
     private String extrairNomeLivrosEmprestimo(EmprestimoEntity emprestimoEntity){
         if (emprestimoEntity.getLivros() != null) {

@@ -62,7 +62,7 @@ class EmprestimoUseCaseTest {
         emprestimo.setClienteId(1L);
         emprestimo.setLivros(Arrays.asList(1L, 2L));
         emprestimo.setDataEmprestimo(null);
-        emprestimo.setAtivo(null);
+        emprestimo.setAtivo(true);
 
         Emprestimo emprestimo2 = new Emprestimo();
         emprestimo2.setId(2L);
@@ -97,9 +97,8 @@ class EmprestimoUseCaseTest {
         doThrow(new BusinessException("Data de devolução inválida"))
                 .when(emprestimoValidate).validarEmprestimo(any(Emprestimo.class));
 
-        BusinessException exception = assertThrows(BusinessException.class, () -> {
-            emprestimoUseCase.realizarEmprestimo(emprestimo);
-        });
+        var exception = assertThrows(BusinessException.class,
+            () -> emprestimoUseCase.realizarEmprestimo(emprestimo));
 
         assertEquals("Data de devolução inválida", exception.getMessage());
         verify(emprestimoValidate, times(1)).validarEmprestimo(any(Emprestimo.class));
@@ -162,16 +161,28 @@ class EmprestimoUseCaseTest {
     @DisplayName("Deve realizar devolução de empréstimo com sucesso")
     void deveRealizarDevolucaoEmprestimoComSucesso() {
         emprestimo.setAtivo(true);
+        emprestimo.setId(1L);
+
+        Emprestimo emprestimoDoDb = new Emprestimo();
+        emprestimoDoDb.setId(1L);
+        emprestimoDoDb.setClienteId(1L);
+        emprestimoDoDb.setLivros(Arrays.asList(1L, 2L));
+        emprestimoDoDb.setAtivo(true);
+        emprestimoDoDb.setDataDevolucao(null);
+        emprestimoDoDb.setDataEmprestimo(LocalDate.now());
+
         doNothing().when(emprestimoValidate).validarDevolucao(any(Emprestimo.class));
+        when(emprestimoOutputPort.getReferenceById(1L)).thenReturn(emprestimoDoDb);
         when(livroOutputPort.buscarLivroPorId(1L)).thenReturn(Optional.of(livro1));
         when(livroOutputPort.buscarLivroPorId(2L)).thenReturn(Optional.of(livro2));
-        when(emprestimoOutputPort.realizarDevolucaoEmprestimo(any(Emprestimo.class))).thenReturn(emprestimo);
+        when(emprestimoOutputPort.realizarDevolucaoEmprestimo(any(Emprestimo.class))).thenReturn(emprestimoDoDb);
 
         Emprestimo resultado = emprestimoUseCase.realizarDevolucaoEmprestimo(emprestimo);
 
         assertNotNull(resultado);
         assertFalse(resultado.getAtivo());
         verify(emprestimoValidate, times(1)).validarDevolucao(any(Emprestimo.class));
+        verify(emprestimoOutputPort, times(1)).getReferenceById(1L);
         verify(livroOutputPort, times(1)).buscarLivroPorId(1L);
         verify(livroOutputPort, times(1)).buscarLivroPorId(2L);
         verify(emprestimoOutputPort, times(1)).realizarDevolucaoEmprestimo(any(Emprestimo.class));
@@ -181,33 +192,48 @@ class EmprestimoUseCaseTest {
     @DisplayName("Deve marcar livros como disponíveis após devolução")
     void deveMarcarLivrosComoDisponiveisAposDevolucao() {
         emprestimo.setAtivo(true);
+        emprestimo.setId(1L);
+
+        Emprestimo emprestimoDoDb = new Emprestimo();
+        emprestimoDoDb.setId(1L);
+        emprestimoDoDb.setClienteId(1L);
+        emprestimoDoDb.setLivros(Arrays.asList(1L, 2L));
+        emprestimoDoDb.setAtivo(true);
+        emprestimoDoDb.setDataDevolucao(null);
+        emprestimoDoDb.setDataEmprestimo(LocalDate.now());
+
         livro1.setDisponivel(false);
         livro2.setDisponivel(false);
+
         doNothing().when(emprestimoValidate).validarDevolucao(any(Emprestimo.class));
+        when(emprestimoOutputPort.getReferenceById(1L)).thenReturn(emprestimoDoDb);
         when(livroOutputPort.buscarLivroPorId(1L)).thenReturn(Optional.of(livro1));
         when(livroOutputPort.buscarLivroPorId(2L)).thenReturn(Optional.of(livro2));
-        when(emprestimoOutputPort.realizarDevolucaoEmprestimo(any(Emprestimo.class))).thenReturn(emprestimo);
+        when(emprestimoOutputPort.realizarDevolucaoEmprestimo(any(Emprestimo.class))).thenReturn(emprestimoDoDb);
 
         emprestimoUseCase.realizarDevolucaoEmprestimo(emprestimo);
 
         assertTrue(livro1.getDisponivel());
         assertTrue(livro2.getDisponivel());
-        verify(livroOutputPort, times(2)).buscarLivroPorId(anyLong());
+        verify(livroOutputPort, times(1)).buscarLivroPorId(1L);
+        verify(livroOutputPort, times(1)).buscarLivroPorId(2L);
     }
 
     @Test
     @DisplayName("Deve lançar exceção quando validação de devolução falhar")
     void deveLancarExcecaoQuandoValidacaoDevolucaoFalhar() {
         emprestimo.setAtivo(true);
-        doThrow(new BusinessException("Empréstimo não encontrado"))
-                .when(emprestimoValidate).validarDevolucao(any(Emprestimo.class));
+        emprestimo.setId(999L); // ID que não existe
 
-        BusinessException exception = assertThrows(BusinessException.class, () -> {
-            emprestimoUseCase.realizarDevolucaoEmprestimo(emprestimo);
-        });
+        doNothing().when(emprestimoValidate).validarDevolucao(any(Emprestimo.class));
+        when(emprestimoOutputPort.getReferenceById(999L)).thenReturn(null);
+
+        var exception = assertThrows(BusinessException.class,
+            () -> emprestimoUseCase.realizarDevolucaoEmprestimo(emprestimo));
 
         assertEquals("Empréstimo não encontrado", exception.getMessage());
         verify(emprestimoValidate, times(1)).validarDevolucao(any(Emprestimo.class));
+        verify(emprestimoOutputPort, times(1)).getReferenceById(999L);
         verify(emprestimoOutputPort, never()).realizarDevolucaoEmprestimo(any(Emprestimo.class));
     }
 
@@ -215,9 +241,20 @@ class EmprestimoUseCaseTest {
     @DisplayName("Deve definir empréstimo como inativo após devolução")
     void deveDefinirEmprestimoComoInativoAposDevolucao() {
         emprestimo.setAtivo(true);
+        emprestimo.setId(1L);
+
+        Emprestimo emprestimoDoDb = new Emprestimo();
+        emprestimoDoDb.setId(1L);
+        emprestimoDoDb.setClienteId(1L);
+        emprestimoDoDb.setLivros(Arrays.asList(1L, 2L));
+        emprestimoDoDb.setAtivo(true);
+        emprestimoDoDb.setDataDevolucao(null);
+        emprestimoDoDb.setDataEmprestimo(LocalDate.now());
+
         doNothing().when(emprestimoValidate).validarDevolucao(any(Emprestimo.class));
+        when(emprestimoOutputPort.getReferenceById(1L)).thenReturn(emprestimoDoDb);
         when(livroOutputPort.buscarLivroPorId(anyLong())).thenReturn(Optional.of(livro1));
-        when(emprestimoOutputPort.realizarDevolucaoEmprestimo(any(Emprestimo.class))).thenReturn(emprestimo);
+        when(emprestimoOutputPort.realizarDevolucaoEmprestimo(any(Emprestimo.class))).thenReturn(emprestimoDoDb);
 
         Emprestimo resultado = emprestimoUseCase.realizarDevolucaoEmprestimo(emprestimo);
 
@@ -228,31 +265,30 @@ class EmprestimoUseCaseTest {
     @DisplayName("Deve definir data de devolução como data atual")
     void deveDefinirDataDevolucaoComoDataAtual() {
         emprestimo.setAtivo(true);
-        emprestimo.setDataDevolucao(null);
+        emprestimo.setId(1L);
+
+        Emprestimo emprestimoDoDb = new Emprestimo();
+        emprestimoDoDb.setId(1L);
+        emprestimoDoDb.setClienteId(1L);
+        emprestimoDoDb.setLivros(Arrays.asList(1L, 2L));
+        emprestimoDoDb.setAtivo(true);
+        emprestimoDoDb.setDataDevolucao(null);
+        emprestimoDoDb.setDataEmprestimo(LocalDate.now());
+
         doNothing().when(emprestimoValidate).validarDevolucao(any(Emprestimo.class));
+        when(emprestimoOutputPort.getReferenceById(1L)).thenReturn(emprestimoDoDb);
         when(livroOutputPort.buscarLivroPorId(1L)).thenReturn(Optional.of(livro1));
         when(livroOutputPort.buscarLivroPorId(2L)).thenReturn(Optional.of(livro2));
-        when(emprestimoOutputPort.realizarDevolucaoEmprestimo(any(Emprestimo.class))).thenReturn(emprestimo);
+        when(emprestimoOutputPort.realizarDevolucaoEmprestimo(any(Emprestimo.class))).thenAnswer(invocation -> {
+            Emprestimo arg = invocation.getArgument(0);
+            arg.setDataDevolucao(LocalDate.now());
+            return arg;
+        });
 
         Emprestimo resultado = emprestimoUseCase.realizarDevolucaoEmprestimo(emprestimo);
 
         assertNotNull(resultado.getDataDevolucao());
         assertEquals(LocalDate.now(), resultado.getDataDevolucao());
-    }
-
-    @Test
-    @DisplayName("Deve marcar livros como indisponíveis após empréstimo")
-    void deveMarcarLivrosComoIndisponiveisAposEmprestimo() {
-        doNothing().when(emprestimoValidate).validarEmprestimo(any(Emprestimo.class));
-        when(livroOutputPort.buscarLivroPorId(1L)).thenReturn(Optional.of(livro1));
-        when(livroOutputPort.buscarLivroPorId(2L)).thenReturn(Optional.of(livro2));
-        when(emprestimoOutputPort.realizarEmprestimo(any(Emprestimo.class))).thenReturn(emprestimo);
-
-        emprestimoUseCase.realizarEmprestimo(emprestimo);
-
-        assertFalse(livro1.getDisponivel());
-        assertFalse(livro2.getDisponivel());
-        verify(livroOutputPort, times(2)).buscarLivroPorId(anyLong());
     }
 
     @Test
@@ -262,24 +298,34 @@ class EmprestimoUseCaseTest {
         livro3.setId(3L);
         livro3.setDisponivel(false);
 
-        emprestimo.setLivros(Arrays.asList(1L, 2L, 3L));
-        emprestimo.setAtivo(true);
+        emprestimo.setId(1L);
+
+        Emprestimo emprestimoDoDb = new Emprestimo();
+        emprestimoDoDb.setId(1L);
+        emprestimoDoDb.setClienteId(1L);
+        emprestimoDoDb.setLivros(Arrays.asList(1L, 2L, 3L));
+        emprestimoDoDb.setAtivo(true);
+        emprestimoDoDb.setDataDevolucao(null);
+        emprestimoDoDb.setDataEmprestimo(LocalDate.now());
 
         livro1.setDisponivel(false);
         livro2.setDisponivel(false);
 
         doNothing().when(emprestimoValidate).validarDevolucao(any(Emprestimo.class));
+        when(emprestimoOutputPort.getReferenceById(1L)).thenReturn(emprestimoDoDb);
         when(livroOutputPort.buscarLivroPorId(1L)).thenReturn(Optional.of(livro1));
         when(livroOutputPort.buscarLivroPorId(2L)).thenReturn(Optional.of(livro2));
         when(livroOutputPort.buscarLivroPorId(3L)).thenReturn(Optional.of(livro3));
-        when(emprestimoOutputPort.realizarDevolucaoEmprestimo(any(Emprestimo.class))).thenReturn(emprestimo);
+        when(emprestimoOutputPort.realizarDevolucaoEmprestimo(any(Emprestimo.class))).thenReturn(emprestimoDoDb);
 
         emprestimoUseCase.realizarDevolucaoEmprestimo(emprestimo);
 
         assertTrue(livro1.getDisponivel());
         assertTrue(livro2.getDisponivel());
         assertTrue(livro3.getDisponivel());
-        verify(livroOutputPort, times(3)).buscarLivroPorId(anyLong());
+        verify(livroOutputPort, times(1)).buscarLivroPorId(1L);
+        verify(livroOutputPort, times(1)).buscarLivroPorId(2L);
+        verify(livroOutputPort, times(1)).buscarLivroPorId(3L);
     }
 
     @Test
@@ -289,19 +335,21 @@ class EmprestimoUseCaseTest {
         livro3.setId(3L);
         livro3.setDisponivel(true);
 
+
         emprestimo.setLivros(Arrays.asList(1L, 2L, 3L));
 
         doNothing().when(emprestimoValidate).validarEmprestimo(any(Emprestimo.class));
         when(livroOutputPort.buscarLivroPorId(1L)).thenReturn(Optional.of(livro1));
         when(livroOutputPort.buscarLivroPorId(2L)).thenReturn(Optional.of(livro2));
         when(livroOutputPort.buscarLivroPorId(3L)).thenReturn(Optional.of(livro3));
-        when(emprestimoOutputPort.realizarEmprestimo(any(Emprestimo.class))).thenReturn(emprestimo);
 
         emprestimoUseCase.realizarEmprestimo(emprestimo);
 
         assertFalse(livro1.getDisponivel());
         assertFalse(livro2.getDisponivel());
         assertFalse(livro3.getDisponivel());
-        verify(livroOutputPort, times(3)).buscarLivroPorId(anyLong());
+        verify(livroOutputPort, times(1)).buscarLivroPorId(1L);
+        verify(livroOutputPort, times(1)).buscarLivroPorId(2L);
+        verify(livroOutputPort, times(1)).buscarLivroPorId(3L);
     }
 }

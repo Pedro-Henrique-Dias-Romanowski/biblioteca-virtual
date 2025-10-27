@@ -16,6 +16,7 @@ import org.springframework.stereotype.Component;
 
 import java.util.List;
 import java.util.Objects;
+import java.util.Optional;
 
 @Component
 public class EmprestimoMapper {
@@ -47,7 +48,7 @@ public class EmprestimoMapper {
 
     public Emprestimo devolucaoEmprestimoMapperToDomain(DevolucaoEmprestimoRequestDTO devolucaoEmprestimoRequestDTO){
         Emprestimo emprestimo = new Emprestimo();
-        emprestimo.setId(emprestimo.getId());
+        emprestimo.setId(devolucaoEmprestimoRequestDTO.idEmprestimo());
         emprestimo.setClienteId(devolucaoEmprestimoRequestDTO.idCliente());
         return emprestimo;
     }
@@ -77,9 +78,11 @@ public class EmprestimoMapper {
         emprestimoEntity.setLivros(pegarReferenciaLivros(emprestimo.getLivros()));
         emprestimoEntity.setDataEmprestimo(emprestimo.getDataEmprestimo());
         emprestimoEntity.setDataDevolucao(emprestimo.getDataDevolucao());
+        emprestimoEntity.setAtivo(emprestimo.getAtivo());
 
         return emprestimoEntity;
     }
+
 
     public Emprestimo entityToDomain(EmprestimoEntity emprestimoEntity){
         Emprestimo emprestimo = new Emprestimo();
@@ -88,6 +91,7 @@ public class EmprestimoMapper {
         emprestimo.setLivros(pegarIdsLivros(emprestimoEntity.getLivros()));
         emprestimo.setDataEmprestimo(emprestimoEntity.getDataEmprestimo());
         emprestimo.setDataDevolucao(emprestimoEntity.getDataDevolucao());
+        emprestimo.setAtivo(emprestimoEntity.getAtivo());
 
         return emprestimo;
     }

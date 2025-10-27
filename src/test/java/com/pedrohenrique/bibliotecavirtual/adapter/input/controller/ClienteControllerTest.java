@@ -409,7 +409,7 @@ class ClienteControllerTest {
         when(clienteUseCase.realizarDevolucaoEmprestimo(any(Emprestimo.class))).thenReturn(emprestimoMock);
         when(emprestimoMapper.toResponse(any(Emprestimo.class))).thenReturn(emprestimoResponseDTO);
 
-        mockMvc.perform(patch("/clientes/emprestimos/devolucacao")
+        mockMvc.perform(patch("/clientes/emprestimos/devolucao")
                         .with(csrf())
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(devolucaoEmprestimoRequestDTO)))
@@ -428,7 +428,7 @@ class ClienteControllerTest {
         when(clienteUseCase.realizarDevolucaoEmprestimo(any(Emprestimo.class)))
                 .thenThrow(new BusinessException("Empréstimo não encontrado"));
 
-        mockMvc.perform(patch("/clientes/emprestimos/devolucacao")
+        mockMvc.perform(patch("/clientes/emprestimos/devolucao")
                         .with(csrf())
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(devolucaoEmprestimoRequestDTO)))
@@ -453,7 +453,7 @@ class ClienteControllerTest {
         when(clienteUseCase.realizarDevolucaoEmprestimo(any(Emprestimo.class))).thenReturn(emprestimoMock);
         when(emprestimoMapper.toResponse(any(Emprestimo.class))).thenReturn(emprestimoInativo);
 
-        mockMvc.perform(patch("/clientes/emprestimos/devolucacao")
+        mockMvc.perform(patch("/clientes/emprestimos/devolucao")
                         .with(csrf())
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(devolucaoEmprestimoRequestDTO)))

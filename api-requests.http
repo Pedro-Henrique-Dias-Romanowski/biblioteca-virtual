@@ -49,8 +49,8 @@ POST {{baseUrl}}/clientes/login
 Content-Type: {{contentType}}
 
 {
-  "email": "pedro.romanowski@pucpr.edu.br",
-  "senha": "908070"
+  "email": "pxdrophd@gmail.com",
+  "senha": "502535"
 }
 
 > {%
@@ -161,18 +161,18 @@ Authorization: Bearer {{tokenCliente}}
 ### 4.3 Realizar Devolução de Empréstimo
 # IMPORTANTE: Substitua os valores abaixo pelos IDs reais
 # OU execute o login (2.2) primeiro para preencher {{clienteId}} automaticamente
-PATCH {{baseUrl}}/clientes/emprestimos/devolucacao
+PATCH {{baseUrl}}/clientes/emprestimos/devolucao
 Content-Type: {{contentType}}
 Authorization: Bearer {{tokenCliente}}
 
 {
-  "idCliente": 4,
-  "idEmprestimo": 4
+  "idCliente": 1,
+  "idEmprestimo": 3
 }
 
 ### 4.4 Realizar Devolução com Variáveis (após login)
 # Esta versão usa variáveis - certifique-se de ter executado o login (2.2) antes
-PATCH {{baseUrl}}/clientes/emprestimos/devolucacao
+PATCH {{baseUrl}}/clientes/emprestimos/devolucao
 Content-Type: {{contentType}}
 Authorization: Bearer {{tokenCliente}}
 
@@ -283,7 +283,7 @@ GET {{baseUrl}}/clientes/emprestimos/{{mariaId}}
 Authorization: Bearer {{tokenMaria}}
 
 ### 7.6 PASSO 6: Devolver empréstimo
-PATCH {{baseUrl}}/clientes/emprestimos/devolucacao
+PATCH {{baseUrl}}/clientes/emprestimos/devolucao
 Content-Type: {{contentType}}
 Authorization: Bearer {{tokenMaria}}
 

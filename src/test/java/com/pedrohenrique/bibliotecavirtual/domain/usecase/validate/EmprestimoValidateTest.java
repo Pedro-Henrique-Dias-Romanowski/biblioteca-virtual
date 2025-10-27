@@ -5,6 +5,7 @@ import com.pedrohenrique.bibliotecavirtual.domain.entity.Livro;
 import com.pedrohenrique.bibliotecavirtual.domain.exceptions.cliente.ClienteInvalidoException;
 import com.pedrohenrique.bibliotecavirtual.domain.exceptions.emprestimo.DataEmprestimoInvalidoException;
 import com.pedrohenrique.bibliotecavirtual.domain.exceptions.emprestimo.EmprestimoInexistenteException;
+import com.pedrohenrique.bibliotecavirtual.domain.exceptions.emprestimo.EmprestimoInvalidoException;
 import com.pedrohenrique.bibliotecavirtual.domain.exceptions.emprestimo.EmprestimoNuloException;
 import com.pedrohenrique.bibliotecavirtual.domain.exceptions.livro.LivroInvalidoException;
 import com.pedrohenrique.bibliotecavirtual.domain.exceptions.livro.LivroNaoEcontradoException;
@@ -56,6 +57,7 @@ class EmprestimoValidateTest {
         emprestimo.setDataEmprestimo(LocalDate.now());
         emprestimo.setDataDevolucao(LocalDate.now().plusDays(7));
         emprestimo.setLivros(List.of(1L));
+        emprestimo.setAtivo(true); // Always start with active=true
 
         livro = new Livro();
         livro.setId(1L);
@@ -69,6 +71,8 @@ class EmprestimoValidateTest {
         ReflectionTestUtils.setField(emprestimoValidate, "mensagemQuantidadeMaximaLivrosEmprestimos", "Quantidade máxima de livros excedida");
         ReflectionTestUtils.setField(emprestimoValidate, "mensagemErroLivroIndisponivel", "Livro indisponível");
         ReflectionTestUtils.setField(emprestimoValidate, "mensagemErroEmprestimoInexistente", "Empréstimo não encontrado");
+        ReflectionTestUtils.setField(emprestimoValidate, "mensagemErroEmprestimoInexistenteClienteId", "O empréstimo não pertence ao cliente informado");
+        ReflectionTestUtils.setField(emprestimoValidate, "mensagemErroEmprestimoJaDevolvido", "Este empréstimo já foi devolvido");
     }
 
     @Test
@@ -405,12 +409,25 @@ class EmprestimoValidateTest {
     @Test
     @DisplayName("Deve validar devolução com sucesso quando todos os dados estão corretos")
     void deveValidarDevolucaoComSucessoQuandoTodosDadosEstaoCorretos() {
+
+        emprestimo.setClienteId(1L);
+        emprestimo.setAtivo(true);
+
+
+        Emprestimo emprestimoExistente = new Emprestimo();
+        emprestimoExistente.setId(1L);
+        emprestimoExistente.setClienteId(1L);
+        emprestimoExistente.setAtivo(true);
+
+
         when(emprestimoOutputPort.existsById(1L)).thenReturn(true);
+        when(emprestimoOutputPort.getReferenceById(1L)).thenReturn(emprestimoExistente);
         when(clienteOutputPort.existsById(1L)).thenReturn(true);
 
         assertDoesNotThrow(() -> emprestimoValidate.validarDevolucao(emprestimo));
 
         verify(emprestimoOutputPort).existsById(1L);
+        verify(emprestimoOutputPort, times(2)).getReferenceById(1L);
         verify(clienteOutputPort).existsById(1L);
     }
 
@@ -428,6 +445,7 @@ class EmprestimoValidateTest {
     @Test
     @DisplayName("Deve lançar exceção ao validar devolução quando empréstimo não existe")
     void deveLancarExcecaoAoValidarDevolucaoQuandoEmprestimoNaoExiste() {
+        emprestimo.setAtivo(true);
         when(emprestimoOutputPort.existsById(1L)).thenReturn(false);
 
         EmprestimoInexistenteException exception = assertThrows(
@@ -443,6 +461,7 @@ class EmprestimoValidateTest {
     @DisplayName("Deve lançar exceção ao validar devolução quando ID do cliente é nulo")
     void deveLancarExcecaoAoValidarDevolucaoQuandoIdDoClienteEhNulo() {
         emprestimo.setClienteId(null);
+        emprestimo.setAtivo(true);
         when(emprestimoOutputPort.existsById(1L)).thenReturn(true);
 
         ClienteInvalidoException exception = assertThrows(
@@ -456,6 +475,8 @@ class EmprestimoValidateTest {
     @Test
     @DisplayName("Deve lançar exceção ao validar devolução quando cliente não existe")
     void deveLancarExcecaoAoValidarDevolucaoQuandoClienteNaoExiste() {
+        emprestimo.setAtivo(true);
+
         when(emprestimoOutputPort.existsById(1L)).thenReturn(true);
         when(clienteOutputPort.existsById(1L)).thenReturn(false);
 
@@ -465,25 +486,38 @@ class EmprestimoValidateTest {
         );
 
         assertEquals("Cliente não encontrado", exception.getMessage());
+        verify(emprestimoOutputPort).existsById(1L);
         verify(clienteOutputPort).existsById(1L);
+        verify(emprestimoOutputPort, never()).getReferenceById(any());
     }
 
     @Test
     @DisplayName("Deve validar devolução quando empréstimo existe com ID válido")
     void deveValidarDevolucaoQuandoEmprestimoExisteComIdValido() {
         emprestimo.setId(999L);
+        emprestimo.setClienteId(1L);
+        emprestimo.setAtivo(true);
+
+        Emprestimo emprestimoExistente = new Emprestimo();
+        emprestimoExistente.setId(999L);
+        emprestimoExistente.setClienteId(1L);
+        emprestimoExistente.setAtivo(true);
+
         when(emprestimoOutputPort.existsById(999L)).thenReturn(true);
+        when(emprestimoOutputPort.getReferenceById(999L)).thenReturn(emprestimoExistente);
         when(clienteOutputPort.existsById(1L)).thenReturn(true);
 
         assertDoesNotThrow(() -> emprestimoValidate.validarDevolucao(emprestimo));
 
         verify(emprestimoOutputPort).existsById(999L);
+        verify(emprestimoOutputPort, times(2)).getReferenceById(999L);
     }
 
     @Test
     @DisplayName("Deve lançar exceção ao validar devolução quando empréstimo com ID diferente não existe")
     void deveLancarExcecaoAoValidarDevolucaoQuandoEmprestimoComIdDiferenteNaoExiste() {
         emprestimo.setId(999L);
+        emprestimo.setAtivo(true);
         when(emprestimoOutputPort.existsById(999L)).thenReturn(false);
 
         EmprestimoInexistenteException exception = assertThrows(
@@ -492,6 +526,74 @@ class EmprestimoValidateTest {
         );
 
         assertEquals("Empréstimo não encontrado", exception.getMessage());
+    }
+
+    @Test
+    @DisplayName("Deve lançar exceção quando tentar devolver empréstimo de outro cliente")
+    void deveLancarExcecaoQuandoTentarDevolverEmprestimoDeOutroCliente() {
+
+        ReflectionTestUtils.setField(emprestimoValidate, "mensagemErroEmprestimoInexistenteClienteId", "O empréstimo não pertence ao cliente informado");
+
+        Emprestimo emprestimo = new Emprestimo();
+        emprestimo.setId(1L);
+        emprestimo.setClienteId(2L);
+        emprestimo.setAtivo(true);
+
+        Emprestimo emprestimoExistente = new Emprestimo();
+        emprestimoExistente.setId(1L);
+        emprestimoExistente.setClienteId(1L);
+        emprestimoExistente.setAtivo(true);
+
+        when(emprestimoOutputPort.getReferenceById(1L)).thenReturn(emprestimoExistente);
+        when(emprestimoOutputPort.existsById(1L)).thenReturn(true);
+        when(clienteOutputPort.existsById(2L)).thenReturn(true);
+
+        assertThrows(EmprestimoInexistenteException.class, () -> emprestimoValidate.validarDevolucao(emprestimo));
+        verify(emprestimoOutputPort).getReferenceById(1L);
+    }
+
+    @Test
+    @DisplayName("Deve lançar exceção quando tentar devolver empréstimo já devolvido")
+    void deveLancarExcecaoQuandoTentarDevolverEmprestimoJaDevolvido() {
+        emprestimo.setAtivo(true);
+        emprestimo.setId(1L);
+
+        Emprestimo emprestimoInativo = new Emprestimo();
+        emprestimoInativo.setId(1L);
+        emprestimoInativo.setClienteId(1L);
+        emprestimoInativo.setAtivo(false);
+
+        when(emprestimoOutputPort.getReferenceById(1L)).thenReturn(emprestimoInativo);
+        when(emprestimoOutputPort.existsById(1L)).thenReturn(true);
+        when(clienteOutputPort.existsById(1L)).thenReturn(true);
+
+        var exception = assertThrows(EmprestimoInvalidoException.class,
+            () -> emprestimoValidate.validarDevolucao(emprestimo));
+
+        assertEquals("Este empréstimo já foi devolvido", exception.getMessage());
+        verify(emprestimoOutputPort, times(2)).getReferenceById(1L);
+    }
+
+    @Test
+    @DisplayName("Deve validar devolução com sucesso quando empréstimo está ativo")
+    void deveValidarDevolucaoComSucessoQuandoEmprestimoEstaAtivo() {
+        emprestimo.setAtivo(true);
+        emprestimo.setId(1L);
+
+        Emprestimo emprestimoAtivo = new Emprestimo();
+        emprestimoAtivo.setId(1L);
+        emprestimoAtivo.setClienteId(1L);
+        emprestimoAtivo.setAtivo(true);
+
+        when(emprestimoOutputPort.getReferenceById(1L)).thenReturn(emprestimoAtivo);
+        when(emprestimoOutputPort.existsById(1L)).thenReturn(true);
+        when(clienteOutputPort.existsById(1L)).thenReturn(true);
+
+        assertDoesNotThrow(() -> emprestimoValidate.validarDevolucao(emprestimo));
+
+        verify(emprestimoOutputPort, times(2)).getReferenceById(1L);
+        verify(emprestimoOutputPort).existsById(1L);
+        verify(clienteOutputPort).existsById(1L);
     }
 }
 

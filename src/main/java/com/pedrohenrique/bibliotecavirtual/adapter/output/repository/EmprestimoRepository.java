@@ -9,4 +9,5 @@ import java.util.List;
 public interface EmprestimoRepository extends JpaRepository<EmprestimoEntity, Long> {
 
     List<EmprestimoEntity> findAllEmprestimosByClienteId(ClienteEntity clienteId);
+    Boolean findEmprestimoByClienteId(ClienteEntity clienteId);
 }

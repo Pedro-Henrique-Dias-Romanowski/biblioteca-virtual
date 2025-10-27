@@ -1,9 +1,11 @@
 package com.pedrohenrique.bibliotecavirtual.domain.usecase.validate;
 
 import com.pedrohenrique.bibliotecavirtual.domain.entity.Emprestimo;
+import com.pedrohenrique.bibliotecavirtual.domain.exceptions.BusinessException;
 import com.pedrohenrique.bibliotecavirtual.domain.exceptions.cliente.ClienteInvalidoException;
 import com.pedrohenrique.bibliotecavirtual.domain.exceptions.emprestimo.DataEmprestimoInvalidoException;
 import com.pedrohenrique.bibliotecavirtual.domain.exceptions.emprestimo.EmprestimoInexistenteException;
+import com.pedrohenrique.bibliotecavirtual.domain.exceptions.emprestimo.EmprestimoInvalidoException;
 import com.pedrohenrique.bibliotecavirtual.domain.exceptions.emprestimo.EmprestimoNuloException;
 import com.pedrohenrique.bibliotecavirtual.domain.exceptions.livro.LivroInvalidoException;
 import com.pedrohenrique.bibliotecavirtual.domain.exceptions.livro.LivroNaoEcontradoException;
@@ -14,6 +16,8 @@ import com.pedrohenrique.bibliotecavirtual.domain.port.output.LivroOutputPort;
 import com.pedrohenrique.bibliotecavirtual.domain.utils.Constantes;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
+
+import java.util.List;
 
 @Component
 public class EmprestimoValidate {
@@ -42,13 +46,19 @@ public class EmprestimoValidate {
     @Value("${mensagem.erro.livro.indisponivel}")
     private String mensagemErroLivroIndisponivel;
 
-    @Value("${mensagem.erro.emprestimo.inexistente")
+    @Value("${mensagem.erro.emprestimo.inexistente}")
     private String mensagemErroEmprestimoInexistente;
 
-    public EmprestimoValidate(LivroOutputPort livroOutputPort, ClienteOutputPort clienteOutputPort, EmprestimoOutputPort emprestimoOutputPort, EmprestimoOutputPort emprestimoOutputPort1) {
+    @Value("${mensagem.erro.emprestimo.inexistente.cliente.id}")
+    private String mensagemErroEmprestimoInexistenteClienteId;
+
+    @Value("${mensagem.erro.emprestimo.ja.devolvido}")
+    private String mensagemErroEmprestimoJaDevolvido;
+
+    public EmprestimoValidate(LivroOutputPort livroOutputPort, ClienteOutputPort clienteOutputPort, EmprestimoOutputPort emprestimoOutputPort) {
         this.livroOutputPort = livroOutputPort;
         this.clienteOutputPort = clienteOutputPort;
-        this.emprestimoOutputPort = emprestimoOutputPort1;
+        this.emprestimoOutputPort = emprestimoOutputPort;
     }
 
     public void validarEmprestimo(Emprestimo emprestimo){
@@ -65,6 +75,8 @@ public class EmprestimoValidate {
         validarExistenciaEmprestimo(emprestimo);
         validarNulidadeIdCliente(emprestimo);
         validarExistenciaIdCliente(emprestimo);
+        validarExistenciaEmprestimoPorIdCliente(emprestimo);
+        validarSeOEmprestimoJaFoiDevolvido(emprestimo);
     }
 
     private void validarNulidadeEmprestimo(Emprestimo emprestimo){
@@ -72,6 +84,7 @@ public class EmprestimoValidate {
             throw new EmprestimoNuloException(mensagemErroEmprestimoNulo);
         }
     }
+
 
     private void validarDataDevolucaoLivro(Emprestimo emprestimo){
         if (emprestimo.getDataDevolucao() == null)
@@ -123,6 +136,20 @@ public class EmprestimoValidate {
     }
 
 
+    private void validarExistenciaEmprestimoPorIdCliente(Emprestimo emprestimo) {
+        var emprestimoEntity = emprestimoOutputPort.getReferenceById(emprestimo.getId());
+        if (emprestimoEntity == null || !emprestimoEntity.getClienteId().equals(emprestimo.getClienteId())) {
+            throw new EmprestimoInexistenteException(mensagemErroEmprestimoInexistenteClienteId);
+        }
+    }
+
+    private void validarSeOEmprestimoJaFoiDevolvido(Emprestimo emprestimo){
+        var emprestimoEntity = emprestimoOutputPort.getReferenceById(emprestimo.getId());
+        if (emprestimoEntity == null || !emprestimoEntity.getAtivo() ){
+            throw new EmprestimoInvalidoException(mensagemErroEmprestimoJaDevolvido);
+        }
+
+    }
     private void validarQuantidadesLivrosEmprestimo(Emprestimo emprestimo){
         if (((emprestimo.getLivros().size() > Constantes.QUANTIDADE_MAX_NUMERO_EMPRESTIMO)))
             throw new QuantidadeMaximaLivrosEmprestimoException(mensagemQuantidadeMaximaLivrosEmprestimos);

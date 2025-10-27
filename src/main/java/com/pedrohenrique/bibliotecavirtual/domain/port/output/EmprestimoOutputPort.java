@@ -14,4 +14,7 @@ public interface EmprestimoOutputPort {
     Emprestimo realizarDevolucaoEmprestimo(Emprestimo emprestimo);
 
     Boolean existsById(Long idEmprestimo);
+
+    Emprestimo getReferenceById(Long idEmprestimo);
+
 }

@@ -15,6 +15,8 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.Optional;
+
 @Component
 public class ClienteAdapter implements ClienteOutputPort {
 
@@ -84,5 +86,10 @@ public class ClienteAdapter implements ClienteOutputPort {
                 clienteRepository.save(clienteEntity);
             }
         }
+    }
+
+    @Override
+    public Optional<Cliente> findById(Long id) {
+        return clienteRepository.findById(id).map(clienteMapper::entityToDomain);
     }
 }
