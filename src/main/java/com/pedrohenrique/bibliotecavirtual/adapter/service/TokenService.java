@@ -12,7 +12,7 @@ import org.springframework.stereotype.Service;
 @Service
 public class TokenService {
 
-    @Value("${JWT_SECRET}")
+    @Value("${spring.security.jwt.secret}")
     private String JWT_SECRET;
 
 

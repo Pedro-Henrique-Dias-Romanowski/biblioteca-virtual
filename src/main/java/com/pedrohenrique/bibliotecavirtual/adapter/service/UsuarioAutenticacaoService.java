@@ -26,7 +26,7 @@ public class UsuarioAutenticacaoService implements UserDetailsService {
     private final AdministradorRepository administradorRepository;
     private final Logger logger = LoggerFactory.getLogger(UsuarioAutenticacaoService.class);
 
-    @Value("${JWT_SECRET}")
+    @Value("${spring.security.jwt.secret}")
     private String JWT_SECRET;
 
     public UsuarioAutenticacaoService(ClienteRepository clienteRepository, AdministradorRepository administradorRepository) {
