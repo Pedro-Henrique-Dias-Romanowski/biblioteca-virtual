@@ -60,6 +60,6 @@ public class LivroValidate {
     }
 
     private void validarExistenciaIdLivro(Long id){
-        if (livroOutputPort.existsById(id)) throw new LivroNaoEcontradoException(mensagemErroLivroNaoEcontrado + id);
+        if (!livroOutputPort.existsById(id)) throw new LivroNaoEcontradoException(mensagemErroLivroNaoEcontrado + id);
     }
 }

@@ -1,0 +1,2 @@
+ALTER TABLE livro ADD COLUMN editora VARCHAR(150);
+

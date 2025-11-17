@@ -82,7 +82,7 @@ class LivroValidateTest {
     @Test
     @DisplayName("Deve validar ID do livro com sucesso quando ID não existe no banco de dados")
     void deveValidarIdDoLivroComSucessoQuandoIdNaoExisteNoBancoDeDados() {
-        when(livroOutputPort.existsById(1L)).thenReturn(false);
+        when(livroOutputPort.existsById(1L)).thenReturn(true);
 
         assertDoesNotThrow(() -> livroValidate.validarIdLivro(1L));
 
@@ -104,7 +104,7 @@ class LivroValidateTest {
     @Test
     @DisplayName("Deve lançar exceção quando ID do livro já existe no banco de dados ao validar ID")
     void deveLancarExcecaoQuandoIdDoLivroJaExisteNoBancoDeDadosAoValidarId() {
-        when(livroOutputPort.existsById(1L)).thenReturn(true);
+        when(livroOutputPort.existsById(1L)).thenReturn(false);
 
         LivroNaoEcontradoException exception = assertThrows(
             LivroNaoEcontradoException.class,
