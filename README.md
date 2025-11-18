@@ -64,7 +64,7 @@ A aplicação conta com envio automático de e-mails nas seguintes ações:
 O projeto utiliza um arquivo simples de **CI/CD**, onde a cada **push** na branch `main` ou abertura de **Pull Request**, o pipeline executa:
 
 ```
-mvn clean install
+mvn -B package --file pom.xml
 ```
 
 Isso garante que novas atualizações não quebrem o código existente.
