@@ -1,15 +1,9 @@
-# This workflow will build a Java project with Maven, and cache/restore any dependencies to improve the workflow execution time
-# For more information see: https://docs.github.com/en/actions/automating-builds-and-tests/building-and-testing-java-with-maven
-
-# This workflow uses actions that are not certified by GitHub.
-# They are provided by a third-party and are governed by
-# separate terms of service, privacy policy, and support
-# documentation.
-
+# Fluxo de CI para Maven (adaptado para enviar snapshot de dependências)
 name: Java CI with Maven
 
-# Permissões mínimas necessárias para que a action de envio de dependências funcione.
-# A action precisa de security-events: write no GITHUB_TOKEN.
+# Permissões mínimas necessárias para a action de envio de dependências:
+# - security-events: write é exigido para criar snapshots do dependency graph
+# - contents: read/ write depende do uso; aqui deixamos contents: read e security-events: write
 permissions:
   contents: read
   packages: read
@@ -23,22 +17,22 @@ on:
 
 jobs:
   build:
-
     runs-on: ubuntu-latest
 
     steps:
     - uses: actions/checkout@v4
+
     - name: Set up JDK 17
       uses: actions/setup-java@v4
       with:
         java-version: '17'
         distribution: 'temurin'
         cache: maven
+
     - name: Build with Maven
       run: mvn -B package --file pom.xml
 
-    # Upload do grafo de dependências para melhorar alerts do Dependabot.
-    # Protegemos a execução para não rodar em PRs vindos de forks (token com permissões restritas).
+    # Não rodar o envio se for PR vindo de fork (tokens de forks têm permissões reduzidas)
     - name: Update dependency graph
       if: github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository
       uses: advanced-security/maven-dependency-submission-action@571e99aab1055c2e71a1e2309b9691de18d6b7d6
