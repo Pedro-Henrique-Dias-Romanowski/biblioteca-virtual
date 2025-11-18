@@ -41,6 +41,7 @@ O sistema utiliza **Spring Security** com **tokens JWT**, garantindo:
 
 Para documentação da API, foi utilizado o **Swagger**, possibilitando visualizar e testar os endpoints de forma simples.
 
+
 Acesse pelo navegador:
 
 ```
