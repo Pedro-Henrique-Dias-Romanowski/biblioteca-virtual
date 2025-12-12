@@ -38,7 +38,7 @@ jobs:
     - name: Push Docker Images to Docker Hub
       run: | 
         docker push ${{secrets.DOCKER_USERNAME}}/biblioteca_virtual:latest
-        docker push ${{secrets.DOCKER_USERNAME}}/biblioteca_virtual:latest:${{github.RUN_ID}}
+        docker push ${{secrets.DOCKER_USERNAME}}/biblioteca_virtual:${{github.RUN_ID}}
       
     # Optional: Uploads the full dependency graph to GitHub to improve the quality of Dependabot alerts this repository can receive
     - name: Update dependency graph
