@@ -2,6 +2,7 @@ services:
   app:
     build: .
     container_name: bibliotecavirtual_app
+    image: pxdrophd/biblioteca_virtual:latest
     env_file:
       - .env
     ports:
