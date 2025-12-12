@@ -33,7 +33,7 @@ jobs:
 
     - name: Tag Docker Images
       run: |
-        docker tag ${{secrets.DOCKER_USERNAME}}/biblioteca_virtual:latest ${{secrets.DOCKER_USERNAME}}/bibliotecavirtual_app:${{github.RUN_ID}}
+        docker tag ${{secrets.DOCKER_USERNAME}}/biblioteca_virtual:latest ${{secrets.DOCKER_USERNAME}}/biblioteca_virtual:${{github.RUN_ID}}
 
     - name: Push Docker Images to Docker Hub
       run: | 
